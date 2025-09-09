@@ -5,13 +5,13 @@ import com.photocard.dto.PhotocardCreateRequest;
 import com.photocard.dto.PhotocardResponse;
 import com.photocard.entity.Photocard;
 import com.photocard.repository.PhotocardRepository;
+import com.photocard.service.MetadataCombinationService.PhotocardMetadata;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -22,6 +22,10 @@ public class PhotocardService {
     
     private final PhotocardRepository photocardRepository;
     private final ExternalApiService externalApiService;
+    private final MetadataCombinationService metadataCombinationService;
+    private final FileStorageService fileStorageService;
+    private final ImageProcessingService imageProcessingService;
+    private final PhotocardTemplateService templateService;
     
     /**
      * 포토카드 생성
@@ -32,11 +36,21 @@ public class PhotocardService {
         // Exhibition 서비스에서 작품 정보 조회
         ExternalArtworkResponse artwork = externalApiService.getArtworkById(request.getArtworkId());
         
+        // Chat-Orchestra 서비스에서 엔딩크레딧 조회
+        var endingCredit = externalApiService.getEndingCreditBySessionId(request.getSessionId());
+        
+        // 메타데이터 조합
+        PhotocardMetadata metadata = metadataCombinationService.combineMetadata(
+                artwork, endingCredit, request.getSessionId());
+        
         // 이미지 라이선스 확인
         boolean hasLicense = externalApiService.checkImageLicense(artwork.getImageUrl());
         if (!hasLicense) {
             throw new RuntimeException("이미지 라이선스가 없어 포토카드를 생성할 수 없습니다.");
         }
+        
+        // 임시 파일 ID 생성 (실제 렌더링 후 업데이트됨)
+        String tempFileId = "temp_" + System.currentTimeMillis();
         
         // 포토카드 생성
         Photocard photocard = Photocard.builder()
@@ -44,8 +58,13 @@ public class PhotocardService {
                 .sessionId(request.getSessionId())
                 .title(request.getTitle() != null ? request.getTitle() : artwork.getTitle())
                 .description(request.getDescription() != null ? request.getDescription() : artwork.getDescription())
-                .previewUrl(generatePreviewUrl())
-                .downloadUrl(generateDownloadUrl())
+                .endingCreditId(metadata.getEndingCreditId())
+                .conversationSummary(metadata.getConversationSummary())
+                .artworkMetadata(metadata.getArtworkMetadata())
+                .endingCreditMetadata(metadata.getEndingCreditMetadata())
+                .combinedMetadata(metadata.getCombinedMetadata())
+                .previewUrl(fileStorageService.generatePreviewUrl(tempFileId))
+                .downloadUrl(fileStorageService.generateDownloadUrl(tempFileId))
                 .status(Photocard.PhotocardStatus.GENERATING)
                 .build();
         
@@ -103,34 +122,32 @@ public class PhotocardService {
      * 포토카드 렌더링 처리 (비동기)
      */
     private void processPhotocardRendering(Photocard photocard) {
-        // 실제 구현에서는 이미지 생성 라이브러리나 AI 서비스를 사용
-        // 여기서는 간단히 상태만 변경
         try {
-            // 렌더링 시뮬레이션
-            Thread.sleep(1000);
+            log.info("포토카드 렌더링 시작 - id: {}", photocard.getId());
             
+            // 1. 기본 템플릿 조회
+            var template = templateService.getDefaultTemplate();
+            
+            // 2. 실제 포토카드 이미지 생성
+            byte[] photocardImage = imageProcessingService.generatePhotocardImage(photocard, template);
+            
+            // 3. 파일 저장
+            String fileName = "photocard_" + photocard.getId() + "_" + System.currentTimeMillis() + ".jpg";
+            String fileId = fileStorageService.saveFile(photocardImage, fileName, "image/jpeg");
+            
+            // 4. 실제 파일 URL로 업데이트
+            photocard.setPreviewUrl(fileStorageService.generatePreviewUrl(fileId));
+            photocard.setDownloadUrl(fileStorageService.generateDownloadUrl(fileId));
             photocard.setStatus(Photocard.PhotocardStatus.COMPLETED);
             photocardRepository.save(photocard);
             
-            log.info("포토카드 렌더링 완료 - id: {}", photocard.getId());
+            log.info("포토카드 렌더링 완료 - id: {}, fileId: {}, size: {} bytes", 
+                    photocard.getId(), fileId, photocardImage.length);
+                    
         } catch (Exception e) {
+            log.error("포토카드 렌더링 실패 - id: {}", photocard.getId(), e);
             photocard.setStatus(Photocard.PhotocardStatus.FAILED);
             photocardRepository.save(photocard);
-            log.error("포토카드 렌더링 실패 - id: {}", photocard.getId(), e);
         }
-    }
-    
-    /**
-     * 미리보기 URL 생성
-     */
-    private String generatePreviewUrl() {
-        return "https://photocard-maker.com/preview/" + UUID.randomUUID().toString();
-    }
-    
-    /**
-     * 다운로드 URL 생성
-     */
-    private String generateDownloadUrl() {
-        return "https://photocard-maker.com/download/" + UUID.randomUUID().toString();
     }
 }

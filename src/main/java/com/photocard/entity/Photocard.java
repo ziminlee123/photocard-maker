@@ -34,6 +34,21 @@ public class Photocard {
     @Column(columnDefinition = "TEXT")
     private String description;
     
+    @Column
+    private Long endingCreditId;
+    
+    @Column(columnDefinition = "TEXT")
+    private String conversationSummary;
+    
+    @Column(columnDefinition = "TEXT")
+    private String artworkMetadata;
+    
+    @Column(columnDefinition = "TEXT")
+    private String endingCreditMetadata;
+    
+    @Column(columnDefinition = "TEXT")
+    private String combinedMetadata;
+    
     @Column(nullable = false)
     private String previewUrl;
     

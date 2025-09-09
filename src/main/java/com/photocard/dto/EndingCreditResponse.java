@@ -18,5 +18,8 @@ public class EndingCreditResponse {
     private String sessionId;
     private List<Long> artworkIds;
     private String conversationSummary;
+    private String participants;
+    private String duration;
+    private String metadata;
     private LocalDateTime createdAt;
 }

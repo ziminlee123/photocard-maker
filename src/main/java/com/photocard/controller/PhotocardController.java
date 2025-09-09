@@ -145,7 +145,7 @@ public class PhotocardController {
         try {
             PhotocardCreateRequest request = PhotocardCreateRequest.builder()
                     .artworkId(1L)
-                    .conversationId(System.currentTimeMillis())
+                    .conversationId(1L) // conversations 테이블에 존재하는 ID 사용
                     .build();
             
             PhotocardResponse response = photocardService.createPhotocard(request);

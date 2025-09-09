@@ -20,13 +20,6 @@ public class PhotocardResponse {
     private String downloadUrl;
     private LocalDateTime createdAt;
     
-    // 호환성을 위한 필드들
-    private String sessionId; // conversationId와 동일
-    private String title; // 작품 제목
-    private String description; // 작품 설명
-    private String previewUrl; // downloadUrl과 동일
-    private String status = "COMPLETED"; // 기본값
-    
     public static PhotocardResponse from(Photocard photocard) {
         return PhotocardResponse.builder()
                 .id(photocard.getId())
@@ -34,12 +27,6 @@ public class PhotocardResponse {
                 .conversationId(photocard.getConversationId())
                 .downloadUrl(photocard.getDownloadUrl())
                 .createdAt(photocard.getCreatedAt())
-                // 호환성 필드들
-                .sessionId(photocard.getConversationId()) // conversationId와 동일
-                .title("포토카드") // 기본 제목
-                .description("작품으로 만든 포토카드입니다") // 기본 설명
-                .previewUrl(photocard.getDownloadUrl()) // downloadUrl과 동일
-                .status("COMPLETED") // 기본 상태
                 .build();
     }
 }

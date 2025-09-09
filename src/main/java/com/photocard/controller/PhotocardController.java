@@ -143,12 +143,8 @@ public class PhotocardController {
         log.info("테스트 포토카드 생성 요청");
         
         try {
-            PhotocardCreateRequest request = PhotocardCreateRequest.builder()
-                    .artworkId(1L)
-                    .conversationId(1L) // conversations 테이블에 존재하는 ID 사용
-                    .build();
-            
-            PhotocardResponse response = photocardService.createPhotocard(request);
+            // 테스트용 간단한 포토카드 생성 (External API 우회)
+            PhotocardResponse response = photocardService.createTestPhotocard();
             log.info("테스트 포토카드 생성 완료 - ID: {}", response.getId());
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } catch (Exception e) {

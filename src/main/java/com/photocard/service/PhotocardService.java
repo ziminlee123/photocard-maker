@@ -13,6 +13,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -161,6 +166,65 @@ public class PhotocardService {
                             .build();
                     return createPhotocard(request);
                 });
+    }
+    
+    /**
+     * 테스트용 포토카드 생성 (External API 우회)
+     */
+    public PhotocardResponse createTestPhotocard() {
+        log.info("테스트 포토카드 생성 시작");
+        
+        try {
+            // 1. 더미 이미지 생성 (External API 없이)
+            byte[] testImage = generateDummyImage();
+            
+            // 2. Azure Storage에 파일 저장
+            String fileId = azureStorageService.savePhotocardImage(testImage);
+            
+            // 3. 포토카드 엔티티 생성
+            Photocard photocard = Photocard.builder()
+                    .artworkId(1L)
+                    .conversationId(1L)
+                    .downloadUrl(azureStorageService.generateDownloadUrl(fileId))
+                    .build();
+            
+            Photocard savedPhotocard = photocardRepository.save(photocard);
+            log.info("테스트 포토카드 생성 완료 - id: {}, fileId: {}", savedPhotocard.getId(), fileId);
+            
+            return PhotocardResponse.from(savedPhotocard);
+                    
+        } catch (Exception e) {
+            log.error("테스트 포토카드 생성 실패", e);
+            throw new RuntimeException("테스트 포토카드 생성에 실패했습니다: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * 더미 이미지 생성
+     */
+    private byte[] generateDummyImage() {
+        try {
+            BufferedImage image = new BufferedImage(600, 400, BufferedImage.TYPE_INT_RGB);
+            Graphics2D g2d = image.createGraphics();
+            
+            // 배경색
+            g2d.setColor(Color.WHITE);
+            g2d.fillRect(0, 0, 600, 400);
+            
+            // 텍스트
+            g2d.setColor(Color.BLACK);
+            g2d.setFont(new Font("Arial", Font.BOLD, 24));
+            g2d.drawString("Test Photocard", 200, 200);
+            
+            g2d.dispose();
+            
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            ImageIO.write(image, "PNG", baos);
+            return baos.toByteArray();
+            
+        } catch (Exception e) {
+            throw new RuntimeException("더미 이미지 생성 실패", e);
+        }
     }
     
     /**

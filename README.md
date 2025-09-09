@@ -83,18 +83,23 @@ photocard-maker/
 ### application.yml
 ```yaml
 server:
+<<<<<<< HEAD
   port: ${WEBSITES_PORT:8081}
   tomcat:
     connection-timeout: 20000
     max-connections: 8192
     accept-count: 100
     max-threads: 200
+=======
+  port: 8081
+>>>>>>> bbb9b983f617183fe7d95036a8e63d6e3b83d018
 
 spring:
   application:
     name: photocard-maker
   
   datasource:
+<<<<<<< HEAD
     url: ${SPRING_DATASOURCE_URL:jdbc:mysql://db-guidely-photocard-v0.mysql.database.azure.com:3306/photocarddb?serverTimezone=UTC&sslMode=REQUIRED&useUnicode=true&characterEncoding=utf8}
     driver-class-name: com.mysql.cj.jdbc.Driver
     username: ${SPRING_DATASOURCE_USERNAME:userapp}
@@ -126,6 +131,23 @@ logging:
   level:
     com.photocard: DEBUG
     org.springframework.web: DEBUG
+=======
+    url: jdbc:h2:mem:photocarddb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: 
+  
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+external:
+  exhibition:
+    base-url: http://localhost:8082
+  chat-orchestra:
+    base-url: http://localhost:8080
+>>>>>>> bbb9b983f617183fe7d95036a8e63d6e3b83d018
 ```
 
 ## 🚀 실행 방법
@@ -137,8 +159,11 @@ cd mas_back_Photocard-Maker
 ```
 
 ### 2. 애플리케이션 실행
+<<<<<<< HEAD
 
 #### 로컬 실행
+=======
+>>>>>>> bbb9b983f617183fe7d95036a8e63d6e3b83d018
 ```bash
 # Windows
 .\gradlew.bat bootRun
@@ -147,6 +172,7 @@ cd mas_back_Photocard-Maker
 ./gradlew bootRun
 ```
 
+<<<<<<< HEAD
 #### Docker 실행
 ```bash
 # Docker 이미지 빌드
@@ -167,6 +193,11 @@ docker-compose up -d
 - **애플리케이션**: http://localhost:8081
 - **Swagger UI**: http://localhost:8081/swagger-ui.html
 - **API 문서**: http://localhost:8081/v3/api-docs
+=======
+### 3. 서비스 확인
+- **애플리케이션**: http://localhost:8081
+- **H2 콘솔**: http://localhost:8081/h2-console
+>>>>>>> bbb9b983f617183fe7d95036a8e63d6e3b83d018
 - **헬스체크**: http://localhost:8081/actuator/health
 
 ## 📡 API 엔드포인트
@@ -265,6 +296,7 @@ $body = @{
 Invoke-RestMethod -Uri "http://localhost:8081/api/photocards" -Method POST -Body $body -ContentType "application/json"
 ```
 
+<<<<<<< HEAD
 ## 🔧 환경변수 설정
 
 ### 필수 환경변수
@@ -294,6 +326,11 @@ Azure App Service에서 환경변수를 설정할 때는 다음 값들을 사용
 ## 📊 데이터베이스 스키마
 
 ### Photocard 테이블 (MySQL)
+=======
+## 📊 데이터베이스 스키마
+
+### Photocard 테이블
+>>>>>>> bbb9b983f617183fe7d95036a8e63d6e3b83d018
 ```sql
 CREATE TABLE photocards (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -304,10 +341,15 @@ CREATE TABLE photocards (
     preview_url VARCHAR(500) NOT NULL,
     download_url VARCHAR(500) NOT NULL,
     status VARCHAR(20) NOT NULL,
+<<<<<<< HEAD
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP,
     INDEX idx_session_id (session_id),
     INDEX idx_artwork_id (artwork_id)
+=======
+    created_at TIMESTAMP NOT NULL,
+    updated_at TIMESTAMP
+>>>>>>> bbb9b983f617183fe7d95036a8e63d6e3b83d018
 );
 ```
 
@@ -332,6 +374,7 @@ CREATE TABLE photocards (
 
 ### 주요 에러 케이스
 - **404**: 포토카드를 찾을 수 없음
+<<<<<<< HEAD
 - **500**: 외부 서비스 연동 실패, 데이터베이스 연결 실패
 - **400**: 잘못된 요청 데이터, 유효성 검사 실패
 - **503**: 외부 API 서비스 사용 불가
@@ -347,6 +390,10 @@ CREATE TABLE photocards (
 - **JSON**: http://localhost:8081/v3/api-docs
 - **YAML**: http://localhost:8081/v3/api-docs.yaml
 - **기능**: API 스펙을 JSON/YAML 형태로 제공
+=======
+- **500**: 외부 서비스 연동 실패
+- **400**: 잘못된 요청 데이터
+>>>>>>> bbb9b983f617183fe7d95036a8e63d6e3b83d018
 
 ## 🔧 개발 환경 설정
 
@@ -356,6 +403,7 @@ CREATE TABLE photocards (
 - **Java 17** SDK 설정
 
 ### 디버깅
+<<<<<<< HEAD
 - MySQL 데이터베이스에서 데이터 상태 확인
 - 로그 레벨을 DEBUG로 설정하여 상세 로그 확인
 - Swagger UI에서 API 테스트 및 디버깅
@@ -375,6 +423,19 @@ CREATE TABLE photocards (
 - [ ] 통합 테스트 작성
 - [ ] CI/CD 파이프라인 구축
 - [ ] 모니터링 및 로깅 강화
+=======
+- H2 콘솔에서 데이터베이스 상태 확인
+- 로그 레벨을 DEBUG로 설정하여 상세 로그 확인
+
+## 📝 TODO
+
+- [ ] 실제 이미지 생성 라이브러리 연동
+- [ ] 비동기 포토카드 렌더링 구현
+- [ ] 외부 라이선스 API 실제 연동
+- [ ] 포토카드 캐싱 구현
+- [ ] 단위 테스트 작성
+- [ ] 통합 테스트 작성
+>>>>>>> bbb9b983f617183fe7d95036a8e63d6e3b83d018
 
 ## 👥 팀원
 

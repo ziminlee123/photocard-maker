@@ -221,52 +221,126 @@ Azure App Service에서 환경변수를 설정할 때는 다음 값들을 사용
 ### 포토카드 관리
 
 #### 1. 포토카드 생성
-```http
-POST /api/photocards
-Content-Type: application/json
 
+**URL:** `POST https://guidely-phtotcardmaker-g9hqaacaadcwdhfn.koreacentral-01.azurewebsites.net/api/photocards`
+
+**Headers:**
+```
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
 {
   "artworkId": 1,
-  "sessionId": "test-session-001",
-  "title": "테스트 포토카드",
-  "description": "테스트용 포토카드입니다"
+  "sessionId": "test-session-123",
+  "title": "아름다운 작품 포토카드",
+  "description": "전시회에서 본 멋진 작품을 포토카드로 만들어봤습니다."
 }
 ```
 
-**응답:**
+**Response (201 Created):**
 ```json
 {
   "id": 1,
   "artworkId": 1,
-  "sessionId": "test-session-001",
-  "title": "테스트 포토카드",
-  "description": "테스트용 포토카드입니다",
-  "previewUrl": "http://localhost:8081/api/files/preview/uuid",
-  "downloadUrl": "http://localhost:8081/api/files/download/uuid",
-  "status": "GENERATING",
+  "sessionId": "test-session-123",
+  "title": "아름다운 작품 포토카드",
+  "description": "전시회에서 본 멋진 작품을 포토카드로 만들어봤습니다.",
+  "previewUrl": "https://guidely-phtotcardmaker-g9hqaacaadcwdhfn.koreacentral-01.azurewebsites.net/api/files/preview/23369aad-a432-4b48-a255-6575ce4f6943",
+  "downloadUrl": "https://guidely-phtotcardmaker-g9hqaacaadcwdhfn.koreacentral-01.azurewebsites.net/api/files/download/abc7683f-cc45-4149-b273-0eb3a4472386",
+  "status": "COMPLETED",
   "endingCreditId": "credit-001",
   "conversationSummary": "사용자가 작품에 대해 대화한 내용 요약",
   "artworkMetadata": "{\"artist\":\"작가명\",\"year\":2024}",
   "endingCreditMetadata": "{\"participants\":[\"사용자1\",\"사용자2\"]}",
   "combinedMetadata": "{\"totalDuration\":300,\"artworkType\":\"painting\"}",
-  "createdAt": "2024-01-01T00:00:00",
-  "updatedAt": "2024-01-01T00:00:00"
+  "createdAt": "2025-09-09T00:38:26",
+  "updatedAt": "2025-09-09T00:38:27"
 }
 ```
 
 #### 2. 포토카드 조회
-```http
-GET /api/photocards/{id}
+
+**URL:** `GET https://guidely-phtotcardmaker-g9hqaacaadcwdhfn.koreacentral-01.azurewebsites.net/api/photocards/{id}`
+
+**예시:** `GET https://guidely-phtotcardmaker-g9hqaacaadcwdhfn.koreacentral-01.azurewebsites.net/api/photocards/1`
+
+**Response (200 OK):**
+```json
+{
+  "id": 1,
+  "artworkId": 1,
+  "sessionId": "test-session-001",
+  "title": "아름다운 작품 포토카드",
+  "description": "전시회에서 본 멋진 작품을 포토카드로 만들어봤습니다.",
+  "previewUrl": "https://guidely-phtotcardmaker-g9hqaacaadcwdhfn.koreacentral-01.azurewebsites.net/api/files/preview/23369aad-a432-4b48-a255-6575ce4f6943",
+  "downloadUrl": "https://guidely-phtotcardmaker-g9hqaacaadcwdhfn.koreacentral-01.azurewebsites.net/api/files/download/abc7683f-cc45-4149-b273-0eb3a4472386",
+  "status": "COMPLETED",
+  "endingCreditId": "credit-001",
+  "conversationSummary": "사용자가 작품에 대해 대화한 내용 요약",
+  "artworkMetadata": "{\"artist\":\"작가명\",\"year\":2024}",
+  "endingCreditMetadata": "{\"participants\":[\"사용자1\",\"사용자2\"]}",
+  "combinedMetadata": "{\"totalDuration\":300,\"artworkType\":\"painting\"}",
+  "createdAt": "2025-09-09T00:38:26",
+  "updatedAt": "2025-09-09T00:38:27"
+}
 ```
 
 #### 3. 세션별 포토카드 목록 조회
-```http
-GET /api/photocards?sessionId={sessionId}
+
+**URL:** `GET https://guidely-phtotcardmaker-g9hqaacaadcwdhfn.koreacentral-01.azurewebsites.net/api/photocards?sessionId={sessionId}`
+
+**예시:** `GET https://guidely-phtotcardmaker-g9hqaacaadcwdhfn.koreacentral-01.azurewebsites.net/api/photocards?sessionId=test-session-123`
+
+**Response (200 OK):**
+```json
+[
+  {
+    "id": 1,
+    "artworkId": 1,
+    "sessionId": "test-session-123",
+    "title": "아름다운 작품 포토카드",
+    "description": "전시회에서 본 멋진 작품을 포토카드로 만들어봤습니다.",
+    "previewUrl": "https://guidely-phtotcardmaker-g9hqaacaadcwdhfn.koreacentral-01.azurewebsites.net/api/files/preview/23369aad-a432-4b48-a255-6575ce4f6943",
+    "downloadUrl": "https://guidely-phtotcardmaker-g9hqaacaadcwdhfn.koreacentral-01.azurewebsites.net/api/files/download/abc7683f-cc45-4149-b273-0eb3a4472386",
+    "status": "COMPLETED",
+    "endingCreditId": "credit-001",
+    "conversationSummary": "사용자가 작품에 대해 대화한 내용 요약",
+    "artworkMetadata": "{\"artist\":\"작가명\",\"year\":2024}",
+    "endingCreditMetadata": "{\"participants\":[\"사용자1\",\"사용자2\"]}",
+    "combinedMetadata": "{\"totalDuration\":300,\"artworkType\":\"painting\"}",
+    "createdAt": "2025-09-09T00:38:26",
+    "updatedAt": "2025-09-09T00:38:27"
+  }
+]
 ```
 
 #### 4. 테스트 데이터 생성
-```http
-POST /api/photocards/test
+
+**URL:** `POST https://guidely-phtotcardmaker-g9hqaacaadcwdhfn.koreacentral-01.azurewebsites.net/api/photocards/test`
+
+**Headers:** 없음 (자동으로 테스트 데이터 생성)
+
+**Response (201 Created):**
+```json
+{
+  "id": 2,
+  "artworkId": 1,
+  "sessionId": "test-session-1725851234567",
+  "title": "테스트 포토카드",
+  "description": "개발용 테스트 포토카드입니다",
+  "previewUrl": "https://guidely-phtotcardmaker-g9hqaacaadcwdhfn.koreacentral-01.azurewebsites.net/api/files/preview/test-uuid",
+  "downloadUrl": "https://guidely-phtotcardmaker-g9hqaacaadcwdhfn.koreacentral-01.azurewebsites.net/api/files/download/test-uuid",
+  "status": "COMPLETED",
+  "endingCreditId": "credit-001",
+  "conversationSummary": "테스트 대화 요약",
+  "artworkMetadata": "{\"artist\":\"테스트 작가\",\"year\":2024}",
+  "endingCreditMetadata": "{\"participants\":[\"테스트 사용자\"]}",
+  "combinedMetadata": "{\"totalDuration\":300,\"artworkType\":\"painting\"}",
+  "createdAt": "2025-09-09T05:12:40",
+  "updatedAt": "2025-09-09T05:12:40"
+}
 ```
 
 ### 파일 관리
@@ -295,41 +369,111 @@ DELETE /api/files/{fileId}
 ### 템플릿 관리
 
 #### 9. 모든 템플릿 조회
-```http
-GET /api/templates
+
+**URL:** `GET https://guidely-phtotcardmaker-g9hqaacaadcwdhfn.koreacentral-01.azurewebsites.net/api/templates`
+
+**Response (200 OK):**
+```json
+[
+  {
+    "id": 1,
+    "name": "기본 템플릿",
+    "description": "기본 포토카드 템플릿입니다",
+    "templateImageUrl": "https://example.com/template.jpg",
+    "width": 800,
+    "height": 600,
+    "type": "CLASSIC",
+    "isActive": true,
+    "layoutConfig": "{\"textAreas\":[{\"x\":50,\"y\":50,\"width\":700,\"height\":100,\"fontSize\":24,\"color\":\"#000000\"}],\"imageAreas\":[{\"x\":100,\"y\":200,\"width\":600,\"height\":300}]}",
+    "createdAt": "2025-09-09T05:03:19",
+    "updatedAt": "2025-09-09T05:03:19"
+  }
+]
 ```
 
 #### 10. 타입별 템플릿 조회
-```http
-GET /api/templates/type/{type}
-```
+
+**URL:** `GET https://guidely-phtotcardmaker-g9hqaacaadcwdhfn.koreacentral-01.azurewebsites.net/api/templates/type/{type}`
+
+**예시:** `GET https://guidely-phtotcardmaker-g9hqaacaadcwdhfn.koreacentral-01.azurewebsites.net/api/templates/type/CLASSIC`
+
+**사용 가능한 타입:** `CLASSIC`, `MODERN`, `MINIMAL`, `ARTISTIC`, `CUSTOM`
 
 #### 11. 특정 템플릿 조회
-```http
-GET /api/templates/{id}
-```
+
+**URL:** `GET https://guidely-phtotcardmaker-g9hqaacaadcwdhfn.koreacentral-01.azurewebsites.net/api/templates/{id}`
+
+**예시:** `GET https://guidely-phtotcardmaker-g9hqaacaadcwdhfn.koreacentral-01.azurewebsites.net/api/templates/1`
 
 #### 12. 기본 템플릿 조회
-```http
-GET /api/templates/default
-```
+
+**URL:** `GET https://guidely-phtotcardmaker-g9hqaacaadcwdhfn.koreacentral-01.azurewebsites.net/api/templates/default`
 
 #### 13. 템플릿 생성
-```http
-POST /api/templates
+
+**URL:** `POST https://guidely-phtotcardmaker-g9hqaacaadcwdhfn.koreacentral-01.azurewebsites.net/api/templates`
+
+**Headers:**
+```
 Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+  "name": "기본 템플릿",
+  "description": "기본 포토카드 템플릿입니다",
+  "templateImageUrl": "https://example.com/template.jpg",
+  "width": 800,
+  "height": 600,
+  "type": "CLASSIC",
+  "isActive": true,
+  "layoutConfig": "{\"textAreas\":[{\"x\":50,\"y\":50,\"width\":700,\"height\":100,\"fontSize\":24,\"color\":\"#000000\"}],\"imageAreas\":[{\"x\":100,\"y\":200,\"width\":600,\"height\":300}]}"
+}
+```
+
+**Response (201 Created):**
+```json
+{
+  "id": 1,
+  "name": "기본 템플릿",
+  "description": "기본 포토카드 템플릿입니다",
+  "templateImageUrl": "https://example.com/template.jpg",
+  "width": 800,
+  "height": 600,
+  "type": "CLASSIC",
+  "isActive": true,
+  "layoutConfig": "{\"textAreas\":[{\"x\":50,\"y\":50,\"width\":700,\"height\":100,\"fontSize\":24,\"color\":\"#000000\"}],\"imageAreas\":[{\"x\":100,\"y\":200,\"width\":600,\"height\":300}]}",
+  "createdAt": "2025-09-09T05:03:19",
+  "updatedAt": "2025-09-09T05:03:19"
+}
 ```
 
 #### 14. 템플릿 수정
-```http
-PUT /api/templates/{id}
+
+**URL:** `PUT https://guidely-phtotcardmaker-g9hqaacaadcwdhfn.koreacentral-01.azurewebsites.net/api/templates/{id}`
+
+**Headers:**
+```
 Content-Type: application/json
 ```
 
-#### 15. 템플릿 삭제
-```http
-DELETE /api/templates/{id}
+**Request Body:** (수정할 필드만 포함)
+```json
+{
+  "name": "수정된 템플릿",
+  "description": "수정된 설명",
+  "isActive": false
+}
 ```
+
+#### 15. 템플릿 삭제
+
+**URL:** `DELETE https://guidely-phtotcardmaker-g9hqaacaadcwdhfn.koreacentral-01.azurewebsites.net/api/templates/{id}`
+
+**예시:** `DELETE https://guidely-phtotcardmaker-g9hqaacaadcwdhfn.koreacentral-01.azurewebsites.net/api/templates/1`
+
+**Response (200 OK):** 빈 응답
 
 ## 🔄 서비스 간 통신
 
@@ -347,39 +491,64 @@ GET http://localhost:8080/api/ending-credits/{endingCreditId}
 
 ## 🧪 테스트 방법
 
-### 1. Postman 사용
-- Postman Collection을 생성하여 위의 API들을 테스트
-- 환경 변수 설정: `baseUrl = http://localhost:8081`
+### 1. Swagger UI 사용 (권장)
 
-### 2. curl 명령어
+**URL**: https://guidely-phtotcardmaker-g9hqaacaadcwdhfn.koreacentral-01.azurewebsites.net/swagger-ui/index.html
+
+* 브라우저에서 위 URL에 접속
+* 각 API 엔드포인트를 클릭하여 "Try it out" 버튼 사용
+* Request body를 입력하고 "Execute" 버튼 클릭
+* 실제 응답을 바로 확인 가능
+
+### 2. Postman 사용
+- Postman Collection을 생성하여 위의 API들을 테스트
+- 환경 변수 설정: `baseUrl = https://guidely-phtotcardmaker-g9hqaacaadcwdhfn.koreacentral-01.azurewebsites.net`
+
+### 3. curl 명령어
 ```bash
 # 헬스체크
-curl -X GET http://localhost:8081/actuator/health
+curl -X GET https://guidely-phtotcardmaker-g9hqaacaadcwdhfn.koreacentral-01.azurewebsites.net/actuator/health
 
 # 포토카드 생성
-curl -X POST http://localhost:8081/api/photocards \
+curl -X POST https://guidely-phtotcardmaker-g9hqaacaadcwdhfn.koreacentral-01.azurewebsites.net/api/photocards \
   -H "Content-Type: application/json" \
   -d '{
     "artworkId": 1,
-    "sessionId": "test-session-001",
-    "title": "테스트 포토카드"
+    "sessionId": "test-session-123",
+    "title": "테스트 포토카드",
+    "description": "curl로 생성한 테스트 포토카드입니다"
   }'
+
+# 템플릿 조회
+curl -X GET https://guidely-phtotcardmaker-g9hqaacaadcwdhfn.koreacentral-01.azurewebsites.net/api/templates
+
+# 포토카드 조회
+curl -X GET https://guidely-phtotcardmaker-g9hqaacaadcwdhfn.koreacentral-01.azurewebsites.net/api/photocards/1
 ```
 
-### 3. PowerShell (Windows)
+### 4. PowerShell (Windows)
 ```powershell
 # 헬스체크
-Invoke-RestMethod -Uri "http://localhost:8081/actuator/health" -Method GET
+Invoke-RestMethod -Uri "https://guidely-phtotcardmaker-g9hqaacaadcwdhfn.koreacentral-01.azurewebsites.net/actuator/health" -Method GET
 
 # 포토카드 생성
 $body = @{
     artworkId = 1
-    sessionId = "test-session-001"
-    title = "테스트 포토카드"
+    sessionId = "test-session-123"
+    title = "PowerShell 테스트 포토카드"
+    description = "PowerShell로 생성한 테스트 포토카드입니다"
 } | ConvertTo-Json
 
-Invoke-RestMethod -Uri "http://localhost:8081/api/photocards" -Method POST -Body $body -ContentType "application/json"
+Invoke-RestMethod -Uri "https://guidely-phtotcardmaker-g9hqaacaadcwdhfn.koreacentral-01.azurewebsites.net/api/photocards" -Method POST -Body $body -ContentType "application/json"
 ```
+
+### 5. 빠른 테스트 순서
+
+1. **헬스체크**: `GET /actuator/health`
+2. **템플릿 조회**: `GET /api/templates`
+3. **포토카드 생성**: `POST /api/photocards`
+4. **포토카드 조회**: `GET /api/photocards/{id}`
+5. **세션별 조회**: `GET /api/photocards?sessionId={sessionId}`
 
 ## 📊 데이터베이스 스키마
 
@@ -453,13 +622,13 @@ CREATE TABLE photocard_templates (
 ## 📚 API 문서
 
 ### Swagger UI
-- **URL**: http://localhost:8081/swagger-ui.html
+- **URL**: https://guidely-phtotcardmaker-g9hqaacaadcwdhfn.koreacentral-01.azurewebsites.net/swagger-ui/index.html
 - **기능**: 인터랙티브 API 문서 및 테스트 도구
 - **지원**: 모든 REST API 엔드포인트 자동 문서화
 
 ### OpenAPI 3.0 스펙
-- **JSON**: http://localhost:8081/v3/api-docs
-- **YAML**: http://localhost:8081/v3/api-docs.yaml
+- **JSON**: https://guidely-phtotcardmaker-g9hqaacaadcwdhfn.koreacentral-01.azurewebsites.net/v3/api-docs
+- **YAML**: https://guidely-phtotcardmaker-g9hqaacaadcwdhfn.koreacentral-01.azurewebsites.net/v3/api-docs.yaml
 - **기능**: API 스펙을 JSON/YAML 형태로 제공
 
 ## 🔧 개발 환경 설정
@@ -500,9 +669,6 @@ CREATE TABLE photocard_templates (
 - [ ] 이미지 최적화 및 압축
 - [ ] 다양한 포토카드 템플릿 추가
 
-## 👥 팀원
-
-- **김대희**: Photocard-Maker 서비스 개발
 
 ## 📄 라이선스
 

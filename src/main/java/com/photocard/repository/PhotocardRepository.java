@@ -9,10 +9,8 @@ import java.util.Optional;
 
 @Repository
 public interface PhotocardRepository extends JpaRepository<Photocard, Long> {
-    
-    List<Photocard> findBySessionId(String sessionId);
-    
-    Optional<Photocard> findBySessionIdAndArtworkId(String sessionId, Long artworkId);
-    
-    List<Photocard> findByStatus(Photocard.PhotocardStatus status);
+
+    List<Photocard> findByConversationId(String conversationId);
+
+    Optional<Photocard> findByConversationIdAndArtworkId(String conversationId, Long artworkId);
 }

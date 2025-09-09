@@ -3,7 +3,7 @@ package com.photocard.controller;
 import com.photocard.dto.PhotocardCreateRequest;
 import com.photocard.dto.PhotocardResponse;
 import com.photocard.service.PhotocardService;
-import com.photocard.service.PhotocardFileService;
+import com.photocard.service.AzureStorageService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -29,7 +29,7 @@ import java.util.List;
 public class PhotocardController {
     
     private final PhotocardService photocardService;
-    private final PhotocardFileService photocardFileService;
+    private final AzureStorageService azureStorageService;
     
     /**
      * 포토카드 생성
@@ -93,14 +93,14 @@ public class PhotocardController {
     })
     @GetMapping("/photocards")
     public ResponseEntity<List<PhotocardResponse>> getPhotocardsBySession(
-            @Parameter(description = "세션 ID", required = true) @RequestParam String sessionId) {
-        log.info("세션별 포토카드 조회 요청: {}", sessionId);
+            @Parameter(description = "대화 ID", required = true) @RequestParam(name = "conversationId") String conversationId) {
+        log.info("대화별 포토카드 조회 요청: {}", conversationId);
         
         try {
-            List<PhotocardResponse> responses = photocardService.getPhotocardsBySessionId(sessionId);
+            List<PhotocardResponse> responses = photocardService.getPhotocardsBySessionId(conversationId);
             return ResponseEntity.ok(responses);
         } catch (Exception e) {
-            log.error("세션별 포토카드 조회 실패: {}", sessionId, e);
+            log.error("대화별 포토카드 조회 실패: {}", conversationId, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
@@ -116,9 +116,9 @@ public class PhotocardController {
     })
     @PostMapping("/conversation/{sessionId}/artworks/{artworkId}/select")
     public ResponseEntity<PhotocardResponse> selectArtwork(
-            @Parameter(description = "세션 ID", required = true) @PathVariable String sessionId,
+            @Parameter(description = "대화 ID", required = true) @PathVariable String sessionId,
             @Parameter(description = "작품 ID", required = true) @PathVariable Long artworkId) {
-        log.info("작품 선택 요청 - sessionId: {}, artworkId: {}", sessionId, artworkId);
+        log.info("작품 선택 요청 - conversationId: {}, artworkId: {}", sessionId, artworkId);
         
         try {
             PhotocardResponse response = photocardService.selectArtwork(sessionId, artworkId);
@@ -145,9 +145,7 @@ public class PhotocardController {
         try {
             PhotocardCreateRequest request = PhotocardCreateRequest.builder()
                     .artworkId(1L)
-                    .sessionId("test-session-" + System.currentTimeMillis())
-                    .title("테스트 포토카드")
-                    .description("개발용 테스트 포토카드입니다")
+                    .conversationId("test-conv-" + System.currentTimeMillis())
                     .build();
             
             PhotocardResponse response = photocardService.createPhotocard(request);
@@ -175,7 +173,7 @@ public class PhotocardController {
         log.info("포토카드 다운로드 요청: {}", fileId);
         
         try {
-            Resource resource = photocardFileService.loadPhotocardImage(fileId);
+            Resource resource = azureStorageService.loadPhotocardImage(fileId);
             
             return ResponseEntity.ok()
                     .contentType(MediaType.APPLICATION_OCTET_STREAM)
@@ -207,7 +205,7 @@ public class PhotocardController {
         log.info("포토카드 미리보기 요청: {}", fileId);
         
         try {
-            Resource resource = photocardFileService.loadPhotocardImage(fileId);
+            Resource resource = azureStorageService.loadPhotocardImage(fileId);
             
             return ResponseEntity.ok()
                     .contentType(MediaType.IMAGE_JPEG)

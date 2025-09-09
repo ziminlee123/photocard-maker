@@ -23,24 +23,24 @@ public class PhotocardService {
     private final PhotocardRepository photocardRepository;
     private final ExternalApiService externalApiService;
     private final MetadataCombinationService metadataCombinationService;
-    private final PhotocardFileService photocardFileService;
+    private final AzureStorageService azureStorageService;
     private final ImageProcessingService imageProcessingService;
     
     /**
      * 포토카드 생성
      */
     public PhotocardResponse createPhotocard(PhotocardCreateRequest request) {
-        log.info("포토카드 생성 시작 - artworkId: {}, sessionId: {}", request.getArtworkId(), request.getSessionId());
+        log.info("포토카드 생성 시작 - artworkId: {}, conversationId: {}", request.getArtworkId(), request.getConversationId());
         
         // Exhibition 서비스에서 작품 정보 조회
         ExternalArtworkResponse artwork = externalApiService.getArtworkById(request.getArtworkId());
         
         // Chat-Orchestra 서비스에서 엔딩크레딧 조회
-        var endingCredit = externalApiService.getEndingCreditBySessionId(request.getSessionId());
+        var endingCredit = externalApiService.getEndingCreditBySessionId(request.getConversationId());
         
         // 메타데이터 조합
         PhotocardMetadata metadata = metadataCombinationService.combineMetadata(
-                artwork, endingCredit, request.getSessionId());
+                artwork, endingCredit, request.getConversationId());
         
         // 이미지 라이선스 확인
         boolean hasLicense = externalApiService.checkImageLicense(artwork.getImageUrl());
@@ -69,8 +69,8 @@ public class PhotocardService {
      * 세션별 포토카드 목록 조회
      */
     @Transactional(readOnly = true)
-    public List<PhotocardResponse> getPhotocardsBySessionId(String sessionId) {
-        List<Photocard> photocards = photocardRepository.findBySessionId(sessionId);
+    public List<PhotocardResponse> getPhotocardsBySessionId(String conversationId) {
+        List<Photocard> photocards = photocardRepository.findByConversationId(conversationId);
         return photocards.stream()
                 .map(PhotocardResponse::from)
                 .collect(Collectors.toList());
@@ -80,16 +80,16 @@ public class PhotocardService {
      * 작품 선택 처리 (Chat-Orchestra에서 호출)
      */
     public PhotocardResponse selectArtwork(String sessionId, Long artworkId) {
-        log.info("작품 선택 처리 - sessionId: {}, artworkId: {}", sessionId, artworkId);
+        log.info("작품 선택 처리 - conversationId: {}, artworkId: {}", sessionId, artworkId);
         
         // 이미 해당 세션에서 같은 작품으로 포토카드가 생성되었는지 확인
-        return photocardRepository.findBySessionIdAndArtworkId(sessionId, artworkId)
+        return photocardRepository.findByConversationIdAndArtworkId(sessionId, artworkId)
                 .map(PhotocardResponse::from)
                 .orElseGet(() -> {
                     // 새로운 포토카드 생성
                     PhotocardCreateRequest request = PhotocardCreateRequest.builder()
                             .artworkId(artworkId)
-                            .sessionId(sessionId)
+                            .conversationId(sessionId)
                             .build();
                     return createPhotocard(request);
                 });
@@ -108,23 +108,14 @@ public class PhotocardService {
             // 1. 포토카드 이미지 생성 (기본 템플릿 사용)
             byte[] photocardImage = imageProcessingService.generatePhotocardImage(artwork, endingCredit);
             
-            // 2. 파일 저장
-            String fileId = photocardFileService.savePhotocardImage(photocardImage);
+            // 2. Azure Storage에 파일 저장
+            String fileId = azureStorageService.savePhotocardImage(photocardImage);
             
             // 3. 포토카드 엔티티 생성
             Photocard photocard = Photocard.builder()
                     .artworkId(request.getArtworkId())
-                    .sessionId(request.getSessionId())
-                    .title(request.getTitle() != null ? request.getTitle() : artwork.getTitle())
-                    .description(request.getDescription() != null ? request.getDescription() : artwork.getDescription())
-                    .endingCreditId(metadata.getEndingCreditId())
-                    .conversationSummary(metadata.getConversationSummary())
-                    .artworkMetadata(metadata.getArtworkMetadata())
-                    .endingCreditMetadata(metadata.getEndingCreditMetadata())
-                    .combinedMetadata(metadata.getCombinedMetadata())
-                    .previewUrl(photocardFileService.generatePreviewUrl(fileId))
-                    .downloadUrl(photocardFileService.generateDownloadUrl(fileId))
-                    .status(Photocard.PhotocardStatus.COMPLETED)
+                    .conversationId(request.getConversationId())
+                    .downloadUrl(azureStorageService.generateDownloadUrl(fileId))
                     .build();
             
             Photocard savedPhotocard = photocardRepository.save(photocard);

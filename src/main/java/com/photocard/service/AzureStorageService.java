@@ -24,13 +24,23 @@ public class AzureStorageService {
     @Value("${azure.storage.container-name:photocards}")
     private String containerName;
     
-    @Value("${azure.storage.base-url:https://guidely-photocardmaker-g9hqaacaadcwdhfn.koreacentral-01.azurewebsites.net}")
+    @Value("${azure.storage.base-url:https://guidely-phtotcardmaker-g9hqaacaadcwdhfn.koreacentral-01.azurewebsites.net}")
     private String baseUrl;
     
     private BlobServiceClient getBlobServiceClient() {
-        return new BlobServiceClientBuilder()
-                .connectionString(connectionString)
-                .buildClient();
+        if (connectionString == null || connectionString.trim().isEmpty()) {
+            log.error("Azure Storage 연결 문자열이 설정되지 않았습니다. connectionString: '{}'", connectionString);
+            throw new RuntimeException("Azure Storage 연결 문자열이 설정되지 않았습니다. AZURE_STORAGE_CONNECTION_STRING 환경변수를 확인하세요.");
+        }
+        
+        try {
+            return new BlobServiceClientBuilder()
+                    .connectionString(connectionString)
+                    .buildClient();
+        } catch (Exception e) {
+            log.error("Azure Storage 연결 실패: {}", e.getMessage());
+            throw new RuntimeException("Azure Storage 연결에 실패했습니다: " + e.getMessage());
+        }
     }
     
     private BlobContainerClient getContainerClient() {

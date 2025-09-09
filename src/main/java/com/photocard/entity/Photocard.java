@@ -26,13 +26,13 @@ public class Photocard {
     private Long artworkId;
     
     @Column(nullable = false)
-    private String sessionId;
+    private String sessionId; //conversationId
     
     @Column(nullable = false)
-    private String title;
+    private String title; //
     
     @Column(columnDefinition = "TEXT")
-    private String description;
+    private String description; //삭제제
     
     @Column
     private Long endingCreditId;
@@ -41,23 +41,23 @@ public class Photocard {
     private String conversationSummary;
     
     @Column(columnDefinition = "TEXT")
-    private String artworkMetadata;
+    private String artworkMetadata; //삭제제
     
     @Column(columnDefinition = "TEXT")
-    private String endingCreditMetadata;
+    private String endingCreditMetadata; //삭삭
     
     @Column(columnDefinition = "TEXT")
-    private String combinedMetadata;
+    private String combinedMetadata; //삭삭
     
     @Column(nullable = false)
-    private String previewUrl;
+    private String previewUrl; //삭삭
     
     @Column(nullable = false)
-    private String downloadUrl;
+    private String downloadUrl; 
     
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private PhotocardStatus status;
+    private PhotocardStatus status; //
     
     @CreationTimestamp
     @Column(nullable = false, updatable = false)

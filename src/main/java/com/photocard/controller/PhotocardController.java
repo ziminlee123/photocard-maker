@@ -138,7 +138,7 @@ public class PhotocardController {
             @ApiResponse(responseCode = "201", description = "테스트 포토카드 생성 성공"),
             @ApiResponse(responseCode = "500", description = "서버 오류")
     })
-    @GetMapping("/photocards/test")
+    @PostMapping("/photocards/test")
     public ResponseEntity<PhotocardResponse> createTestPhotocard() {
         log.info("테스트 포토카드 생성 요청");
         

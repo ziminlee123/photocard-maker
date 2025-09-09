@@ -18,5 +18,5 @@ public class PhotocardCreateRequest {
     
     @NotNull(message = "대화 ID는 필수입니다")
     @JsonAlias({"sessionId", "conversationId"})
-    private String conversationId;
+    private Long conversationId;
 }

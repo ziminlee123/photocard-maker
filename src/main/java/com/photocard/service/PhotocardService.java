@@ -69,7 +69,7 @@ public class PhotocardService {
      * 세션별 포토카드 목록 조회
      */
     @Transactional(readOnly = true)
-    public List<PhotocardResponse> getPhotocardsBySessionId(String conversationId) {
+    public List<PhotocardResponse> getPhotocardsBySessionId(Long conversationId) {
         List<Photocard> photocards = photocardRepository.findByConversationId(conversationId);
         return photocards.stream()
                 .map(PhotocardResponse::from)
@@ -79,17 +79,17 @@ public class PhotocardService {
     /**
      * 작품 선택 처리 (Chat-Orchestra에서 호출)
      */
-    public PhotocardResponse selectArtwork(String sessionId, Long artworkId) {
-        log.info("작품 선택 처리 - conversationId: {}, artworkId: {}", sessionId, artworkId);
+    public PhotocardResponse selectArtwork(Long conversationId, Long artworkId) {
+        log.info("작품 선택 처리 - conversationId: {}, artworkId: {}", conversationId, artworkId);
         
         // 이미 해당 세션에서 같은 작품으로 포토카드가 생성되었는지 확인
-        return photocardRepository.findByConversationIdAndArtworkId(sessionId, artworkId)
+        return photocardRepository.findByConversationIdAndArtworkId(conversationId, artworkId)
                 .map(PhotocardResponse::from)
                 .orElseGet(() -> {
                     // 새로운 포토카드 생성
                     PhotocardCreateRequest request = PhotocardCreateRequest.builder()
                             .artworkId(artworkId)
-                            .conversationId(sessionId)
+                            .conversationId(conversationId)
                             .build();
                     return createPhotocard(request);
                 });

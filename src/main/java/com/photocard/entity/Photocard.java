@@ -22,7 +22,7 @@ public class Photocard {
     private Long id;
     
     @Column(name = "conversation_id", nullable = false)
-    private String conversationId;
+    private Long conversationId;
 
     @Column(name = "artwork_id", nullable = false)
     private Long artworkId;

@@ -16,7 +16,7 @@ public class PhotocardResponse {
     
     private Long id;
     private Long artworkId;
-    private String conversationId;
+    private Long conversationId;
     private String downloadUrl;
     private LocalDateTime createdAt;
     

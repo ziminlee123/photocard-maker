@@ -93,7 +93,7 @@ public class PhotocardController {
     })
     @GetMapping("/photocards")
     public ResponseEntity<List<PhotocardResponse>> getPhotocardsBySession(
-            @Parameter(description = "대화 ID", required = true) @RequestParam(name = "conversationId") String conversationId) {
+            @Parameter(description = "대화 ID", required = true) @RequestParam(name = "conversationId") Long conversationId) {
         log.info("대화별 포토카드 조회 요청: {}", conversationId);
         
         try {
@@ -116,15 +116,15 @@ public class PhotocardController {
     })
     @PostMapping("/conversation/{sessionId}/artworks/{artworkId}/select")
     public ResponseEntity<PhotocardResponse> selectArtwork(
-            @Parameter(description = "대화 ID", required = true) @PathVariable String sessionId,
+            @Parameter(description = "대화 ID", required = true) @PathVariable Long conversationId,
             @Parameter(description = "작품 ID", required = true) @PathVariable Long artworkId) {
-        log.info("작품 선택 요청 - conversationId: {}, artworkId: {}", sessionId, artworkId);
+        log.info("작품 선택 요청 - conversationId: {}, artworkId: {}", conversationId, artworkId);
         
         try {
-            PhotocardResponse response = photocardService.selectArtwork(sessionId, artworkId);
+            PhotocardResponse response = photocardService.selectArtwork(conversationId, artworkId);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            log.error("작품 선택 실패 - sessionId: {}, artworkId: {}", sessionId, artworkId, e);
+            log.error("작품 선택 실패 - conversationId: {}, artworkId: {}", conversationId, artworkId, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
@@ -145,7 +145,7 @@ public class PhotocardController {
         try {
             PhotocardCreateRequest request = PhotocardCreateRequest.builder()
                     .artworkId(1L)
-                    .conversationId("test-conv-" + System.currentTimeMillis())
+                    .conversationId(System.currentTimeMillis())
                     .build();
             
             PhotocardResponse response = photocardService.createPhotocard(request);

@@ -19,6 +19,63 @@ import java.net.URL;
 public class ImageProcessingService {
     
     /**
+     * 간단한 포토카드 이미지 생성 (메타데이터 없이)
+     */
+    public byte[] generateSimplePhotocardImage(ExternalArtworkResponse artwork) {
+        log.info("간단한 포토카드 이미지 생성 시작 - artworkId: {}", artwork.getId());
+        
+        try {
+            // 1. 작품 이미지 로드
+            BufferedImage artworkImage = loadArtworkImage(artwork);
+            
+            // 2. 포토카드 크기 설정 (600x400)
+            int cardWidth = 600;
+            int cardHeight = 400;
+            BufferedImage photocard = new BufferedImage(cardWidth, cardHeight, BufferedImage.TYPE_INT_RGB);
+            Graphics2D g2d = photocard.createGraphics();
+            
+            // 3. 배경색 설정 (흰색)
+            g2d.setColor(Color.WHITE);
+            g2d.fillRect(0, 0, cardWidth, cardHeight);
+            
+            // 4. 작품 이미지 그리기 (중앙에 배치)
+            int imageWidth = 400;
+            int imageHeight = 300;
+            int x = (cardWidth - imageWidth) / 2;
+            int y = (cardHeight - imageHeight) / 2;
+            g2d.drawImage(artworkImage, x, y, imageWidth, imageHeight, null);
+            
+            // 5. 작품 제목 추가
+            g2d.setColor(Color.BLACK);
+            g2d.setFont(new Font("Arial", Font.BOLD, 16));
+            String title = artwork.getTitle() != null ? artwork.getTitle() : "작품 제목";
+            FontMetrics fm = g2d.getFontMetrics();
+            int titleX = (cardWidth - fm.stringWidth(title)) / 2;
+            g2d.drawString(title, titleX, 30);
+            
+            // 6. 작가명 추가
+            g2d.setFont(new Font("Arial", Font.PLAIN, 12));
+            String artist = artwork.getArtist() != null ? artwork.getArtist() : "작가명";
+            fm = g2d.getFontMetrics();
+            int artistX = (cardWidth - fm.stringWidth(artist)) / 2;
+            g2d.drawString(artist, artistX, cardHeight - 20);
+            
+            g2d.dispose();
+            
+            // 7. 바이트 배열로 변환
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            ImageIO.write(photocard, "PNG", baos);
+            
+            log.info("간단한 포토카드 이미지 생성 완료 - 크기: {} bytes", baos.size());
+            return baos.toByteArray();
+            
+        } catch (Exception e) {
+            log.error("간단한 포토카드 이미지 생성 실패", e);
+            throw new RuntimeException("포토카드 이미지 생성에 실패했습니다: " + e.getMessage());
+        }
+    }
+    
+    /**
      * 포토카드 이미지 생성 (단순화된 버전)
      */
     public byte[] generatePhotocardImage(ExternalArtworkResponse artwork, EndingCreditResponse endingCredit) {

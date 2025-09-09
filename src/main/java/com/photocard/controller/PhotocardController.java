@@ -114,10 +114,11 @@ public class PhotocardController {
             @ApiResponse(responseCode = "200", description = "작품 선택 성공"),
             @ApiResponse(responseCode = "500", description = "서버 오류")
     })
-    @PostMapping("/conversation/{sessionId}/artworks/{artworkId}/select")
+    @PostMapping(value = "/conversation/{sessionId}/artworks/{artworkId}/select", consumes = "application/json")
     public ResponseEntity<PhotocardResponse> selectArtwork(
-            @Parameter(description = "대화 ID", required = true) @PathVariable Long conversationId,
-            @Parameter(description = "작품 ID", required = true) @PathVariable Long artworkId) {
+            @Parameter(description = "대화 ID", required = true) @PathVariable("sessionId") Long conversationId,
+            @Parameter(description = "작품 ID", required = true) @PathVariable Long artworkId,
+            @RequestBody(required = false) String body) {
         log.info("작품 선택 요청 - conversationId: {}, artworkId: {}", conversationId, artworkId);
         
         try {
@@ -138,8 +139,8 @@ public class PhotocardController {
             @ApiResponse(responseCode = "201", description = "테스트 포토카드 생성 성공"),
             @ApiResponse(responseCode = "500", description = "서버 오류")
     })
-    @PostMapping("/photocards/test")
-    public ResponseEntity<PhotocardResponse> createTestPhotocard() {
+    @PostMapping(value = "/photocards/test", consumes = "application/json")
+    public ResponseEntity<PhotocardResponse> createTestPhotocard(@RequestBody(required = false) String body) { 
         log.info("테스트 포토카드 생성 요청");
         
         try {
@@ -172,9 +173,9 @@ public class PhotocardController {
             Resource resource = azureStorageService.loadPhotocardImage(fileId);
             
             return ResponseEntity.ok()
-                    .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                    .contentType(MediaType.IMAGE_JPEG)
                     .header(HttpHeaders.CONTENT_DISPOSITION, 
-                            "attachment; filename=\"photocard_" + fileId + ".jpg\"")
+                            "inline; filename=\"photocard_" + fileId + ".jpg\"")
                     .body(resource);
         } catch (RuntimeException e) {
             log.error("포토카드 다운로드 실패 - fileId: {}, 오류: {}", fileId, e.getMessage());

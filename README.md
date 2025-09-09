@@ -231,9 +231,25 @@ Content-Type: application/json
 
 **URL:** `POST https://guidely-phtotcardmaker-g9hqaacaadcwdhfn.koreacentral-01.azurewebsites.net/api/conversation/{sessionId}/artworks/{artworkId}/select`
 
-**예시:** `POST https://guidely-phtotcardmaker-g9hqaacaadcwdhfn.koreacentral-01.azurewebsites.net/api/conversation/test-session-123/artworks/1/select`
+**예시:** `POST https://guidely-phtotcardmaker-g9hqaacaadcwdhfn.koreacentral-01.azurewebsites.net/api/conversation/1/artworks/1/select`
+
+**Headers:**
+```
+Content-Type: application/json
+```
+
+**Request Body:** (선택사항 - 빈 body 허용)
+```json
+{}
+```
 
 **Response (200 OK):** 포토카드 생성 결과
+
+**Postman 테스트 방법:**
+1. Method: POST
+2. URL: `https://guidely-phtotcardmaker-g9hqaacaadcwdhfn.koreacentral-01.azurewebsites.net/api/conversation/1/artworks/1/select`
+3. Headers: `Content-Type: application/json`
+4. Body: `{}` (빈 JSON 객체) 또는 Body 없이 전송
 
 #### 5. 포토카드 다운로드
 

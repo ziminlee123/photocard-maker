@@ -9,7 +9,10 @@ COPY gradlew .
 COPY gradle gradle
 COPY build.gradle .
 
-# 의존성 다운로드
+# gradlew 실행 권한 부여
+RUN chmod +x ./gradlew
+
+# 의존성 다운로드 (캐시 최적화)
 RUN ./gradlew dependencies --no-daemon
 
 # 소스 코드 복사

@@ -1,0 +1,27 @@
+[1mdiff --git a/src/main/resources/application.yml b/src/main/resources/application.yml[m
+[1mindex ba03b4e..8cf2861 100644[m
+[1m--- a/src/main/resources/application.yml[m
+[1m+++ b/src/main/resources/application.yml[m
+[36m@@ -10,6 +10,13 @@[m [mspring:[m
+   application:[m
+     name: photocard-maker[m
+   [m
+[32m+[m[32m  servlet:[m
+[32m+[m[32m    multipart:[m
+[32m+[m[32m      enabled: true[m
+[32m+[m[32m      max-file-size: 10MB[m
+[32m+[m[32m      max-request-size: 10MB[m
+[32m+[m[32m      file-size-threshold: 2KB[m
+[32m+[m[41m  [m
+   datasource:[m
+     url: ${SPRING_DATASOURCE_URL:jdbc:mysql://db-guidely-photocard-v0.mysql.database.azure.com:3306/photocarddb?serverTimezone=UTC&sslMode=REQUIRED&useUnicode=true&characterEncoding=utf8}[m
+     driver-class-name: com.mysql.cj.jdbc.Driver[m
+[36m@@ -51,6 +58,6 @@[m [mfile:[m
+ # Azure Storage configuration[m
+ azure:[m
+   storage:[m
+[31m-    connection-string: ${AZURE_STORAGE_CONNECTION_STRING:}[m
+[32m+[m[32m    connection-string: ${AZURE_STORAGE_CONNECTION_STRING:DefaultEndpointsProtocol=https;AccountName=photocardstorage;AccountKey=4EYmyQWI4rqw4uvZ0AyeL6KmhfHs97TrbdnywAnW0UdHL89qGApa1fZ8ZMoyr+zhoH81H4sueDJk+AStheQ0IQ==;EndpointSuffix=core.windows.net}[m
+     container-name: ${AZURE_STORAGE_CONTAINER_NAME:photocards}[m
+     base-url: ${AZURE_STORAGE_BASE_URL:https://guidely-phtotcardmaker-g9hqaacaadcwdhfn.koreacentral-01.azurewebsites.net}[m
+\ No newline at end of file[m

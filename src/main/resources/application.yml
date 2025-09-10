@@ -51,6 +51,6 @@ file:
 # Azure Storage configuration
 azure:
   storage:
-    connection-string: ${AZURE_STORAGE_CONNECTION_STRING:DefaultEndpointsProtocol=https;AccountName=photocardstorage;AccountKey=zAvgm71XR+iP5EFFVHS6CFeATUUawLeQndFxWseERMduZZYR1Agp+ikq9XrU2af9ZSHb6fLdG/tz+AStm4B4iQ==;EndpointSuffix=core.windows.net}
+    connection-string: ${AZURE_STORAGE_CONNECTION_STRING:}
     container-name: ${AZURE_STORAGE_CONTAINER_NAME:photocards}
     base-url: ${AZURE_STORAGE_BASE_URL:https://guidely-phtotcardmaker-g9hqaacaadcwdhfn.koreacentral-01.azurewebsites.net}

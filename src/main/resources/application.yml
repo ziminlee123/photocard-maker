@@ -1,0 +1,56 @@
+server:
+  port: ${WEBSITES_PORT:8083}
+  tomcat:
+    connection-timeout: 20000
+    max-connections: 8192
+    accept-count: 100
+    max-threads: 200
+
+spring:
+  application:
+    name: photocard-maker
+  
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://db-guidely-photocard-v0.mysql.database.azure.com:3306/photocarddb?serverTimezone=UTC&sslMode=REQUIRED&useUnicode=true&characterEncoding=utf8}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: ${SPRING_DATASOURCE_USERNAME:appphotocard}
+    password: ${SPRING_DATASOURCE_PASSWORD:AppUserPass#123}
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      connection-timeout: 20000
+      idle-timeout: 300000
+      max-lifetime: 1200000
+  
+  jpa:
+    hibernate:
+      ddl-auto: ${SPRING_JPA_HIBERNATE_DDL_AUTO:none}
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+        format_sql: true
+
+# External API endpoints
+external:
+  exhibition:
+    base-url: ${EXHIBITION_API_URL:http://localhost:8082}
+  chat-orchestra:
+    base-url: ${CHAT_ORCHESTRA_API_URL:http://localhost:8080}
+
+logging:
+  level:
+    com.photocard: DEBUG
+    org.springframework.web: DEBUG
+
+# File storage configuration
+file:
+  upload-dir: ${FILE_UPLOAD_DIR:./uploads}
+  base-url: ${FILE_BASE_URL:http://localhost:8081}
+
+# Azure Storage configuration
+azure:
+  storage:
+    connection-string: ${AZURE_STORAGE_CONNECTION_STRING:DefaultEndpointsProtocol=https;AccountName=photocardstorage;AccountKey=zAvgm71XR+iP5EFFVHS6CFeATUUawLeQndFxWseERMduZZYR1Agp+ikq9XrU2af9ZSHb6fLdG/tz+AStm4B4iQ==;EndpointSuffix=core.windows.net}
+    container-name: ${AZURE_STORAGE_CONTAINER_NAME:photocards}
+    base-url: ${AZURE_STORAGE_BASE_URL:https://guidely-phtotcardmaker-g9hqaacaadcwdhfn.koreacentral-01.azurewebsites.net}

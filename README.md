@@ -4,10 +4,11 @@
 
 ## 🎯 주요 기능
 
+- **파일 업로드 포토카드 생성**: 사용자가 직접 이미지를 업로드하여 포토카드 생성
 - **작품 선택**: 사용자가 관람한 작품 중 선택
 - **포토카드 생성**: 선택한 작품과 감성 문구를 조합한 포토카드 자동 생성
 - **이미지 처리**: 작품 이미지 다운로드, 리사이즈, 텍스트 오버레이
-- **파일 관리**: 생성된 포토카드 이미지 저장 및 URL 제공
+- **파일 관리**: Azure Storage를 통한 포토카드 이미지 저장 및 URL 제공
 - **외부 API 연동**: Exhibition 서비스(작품 정보), Chat-Orchestra 서비스(엔딩크레딧)
 
 ## 🏗️ 시스템 아키텍처
@@ -36,9 +37,11 @@
 
 - **Backend**: Spring Boot 3.2.0
 - **Database**: MySQL 8.0 (Azure Database)
+- **Storage**: Azure Blob Storage
 - **Build Tool**: Gradle 8.5
 - **Java**: OpenJDK 17
 - **Image Processing**: Java AWT, ImageIO
+- **File Upload**: MultipartFile
 - **API Documentation**: Swagger/OpenAPI 3
 - **Containerization**: Docker
 - **Cloud**: Azure App Service
@@ -156,13 +159,20 @@ docker push ziminlee123/photocard-maker:latest
 
 ### 포토카드 관리
 
-#### 1. 포토카드 생성
+#### 1. 포토카드 생성 (파일 업로드)
 
 **URL:** `POST https://guidely-phtotcardmaker-g9hqaacaadcwdhfn.koreacentral-01.azurewebsites.net/api/photocards`
 
 **Headers:**
 ```
-Content-Type: application/json
+Content-Type: multipart/form-data
+```
+
+**Request Body (form-data):**
+```
+file: [이미지 파일]
+conversationId: 1
+artworkId: 1
 ```
 
 **Request Body:**
@@ -422,7 +432,8 @@ export CHAT_ORCHESTRA_API_URL=http://localhost:8080
 ## 📝 TODO
 
 ### ✅ 완료된 기능
-- [x] 기본 포토카드 생성 API
+- [x] 파일 업로드 포토카드 생성 API
+- [x] Azure Blob Storage 연동
 - [x] 작품 정보 연동 (Exhibition 서비스)
 - [x] 엔딩크레딧 연동 (Chat-Orchestra 서비스)
 - [x] 이미지 처리 및 렌더링

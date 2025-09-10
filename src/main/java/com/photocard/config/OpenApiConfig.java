@@ -30,9 +30,6 @@ public class OpenApiConfig implements WebMvcConfigurer {
                                 .email("kimdaehee@example.com")))
                 .servers(List.of(
                         new Server()
-                                .url("http://localhost:8081")
-                                .description("개발 서버"),
-                        new Server()
                                 .url("https://guidely-phtotcardmaker-g9hqaacaadcwdhfn.koreacentral-01.azurewebsites.net")
                                 .description("Azure 프로덕션 서버")
                 ));

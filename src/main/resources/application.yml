@@ -10,6 +10,13 @@ spring:
   application:
     name: photocard-maker
   
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 10MB
+      file-size-threshold: 2KB
+  
   datasource:
     url: ${SPRING_DATASOURCE_URL:jdbc:mysql://db-guidely-photocard-v0.mysql.database.azure.com:3306/photocarddb?serverTimezone=UTC&sslMode=REQUIRED&useUnicode=true&characterEncoding=utf8}
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -51,6 +58,6 @@ file:
 # Azure Storage configuration
 azure:
   storage:
-    connection-string: ${AZURE_STORAGE_CONNECTION_STRING:}
+    connection-string: ${AZURE_STORAGE_CONNECTION_STRING:DefaultEndpointsProtocol=https;AccountName=photocardstorage;AccountKey=4EYmyQWI4rqw4uvZ0AyeL6KmhfHs97TrbdnywAnW0UdHL89qGApa1fZ8ZMoyr+zhoH81H4sueDJk+AStheQ0IQ==;EndpointSuffix=core.windows.net}
     container-name: ${AZURE_STORAGE_CONTAINER_NAME:photocards}
     base-url: ${AZURE_STORAGE_BASE_URL:https://guidely-phtotcardmaker-g9hqaacaadcwdhfn.koreacentral-01.azurewebsites.net}

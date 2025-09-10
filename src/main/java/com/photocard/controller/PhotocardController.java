@@ -40,7 +40,8 @@ public class PhotocardController {
             @ApiResponse(responseCode = "400", description = "잘못된 요청"),
             @ApiResponse(responseCode = "500", description = "서버 오류")
     })
-    @PostMapping(value = "/photocards", consumes = "multipart/form-data")
+    // @PostMapping(value = "/photocards", consumes = "multipart/form-data")
+    @PostMapping(value = "/photocards")
     public ResponseEntity<PhotocardResponse> createPhotocard(
             @Parameter(description = "업로드할 이미지 파일", required = true) 
             @RequestParam("file") MultipartFile file,

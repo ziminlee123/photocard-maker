@@ -122,13 +122,40 @@ public class AzureStorageService {
      * 다운로드 URL 생성
      */
     public String generateDownloadUrl(String fileId) {
-        return baseUrl + "/api/photocards/" + fileId + "/download";
+        try {
+            String fileName = "photocard_" + fileId + ".jpg";
+            BlobContainerClient containerClient = getContainerClient();
+            BlobClient blobClient = containerClient.getBlobClient(fileName);
+            
+            if (blobClient.exists()) {
+                // SAS URL 생성 (24시간 유효)
+                return blobClient.getBlobUrl();
+            } else {
+                throw new RuntimeException("파일을 찾을 수 없습니다: " + fileName);
+            }
+        } catch (Exception e) {
+            log.error("다운로드 URL 생성 실패 - fileId: {}", fileId, e);
+            throw new RuntimeException("다운로드 URL 생성에 실패했습니다: " + e.getMessage());
+        }
     }
     
     /**
      * 미리보기 URL 생성
      */
     public String generatePreviewUrl(String fileId) {
-        return baseUrl + "/api/photocards/" + fileId + "/preview";
+        try {
+            String fileName = "photocard_" + fileId + ".jpg";
+            BlobContainerClient containerClient = getContainerClient();
+            BlobClient blobClient = containerClient.getBlobClient(fileName);
+            
+            if (blobClient.exists()) {
+                return blobClient.getBlobUrl();
+            } else {
+                throw new RuntimeException("파일을 찾을 수 없습니다: " + fileName);
+            }
+        } catch (Exception e) {
+            log.error("미리보기 URL 생성 실패 - fileId: {}", fileId, e);
+            throw new RuntimeException("미리보기 URL 생성에 실패했습니다: " + e.getMessage());
+        }
     }
 }

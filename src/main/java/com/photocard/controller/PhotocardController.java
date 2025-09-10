@@ -1,6 +1,5 @@
 package com.photocard.controller;
 
-import com.photocard.dto.PhotocardCreateRequest;
 import com.photocard.dto.PhotocardResponse;
 import com.photocard.service.PhotocardService;
 import com.photocard.service.AzureStorageService;
@@ -9,7 +8,6 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.Resource;
@@ -18,6 +16,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -32,21 +31,33 @@ public class PhotocardController {
     private final AzureStorageService azureStorageService;
     
     /**
-     * 포토카드 생성
+     * 포토카드 생성 (파일 업로드)
      * POST /api/photocards
      */
-    @Operation(summary = "포토카드 생성", description = "작품 정보를 기반으로 포토카드를 생성합니다")
+    @Operation(summary = "포토카드 생성", description = "이미지 파일을 업로드하여 포토카드를 생성합니다")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "포토카드 생성 성공"),
             @ApiResponse(responseCode = "400", description = "잘못된 요청"),
             @ApiResponse(responseCode = "500", description = "서버 오류")
     })
-    @PostMapping("/photocards")
-    public ResponseEntity<PhotocardResponse> createPhotocard(@Valid @RequestBody PhotocardCreateRequest request) {
-        log.info("포토카드 생성 요청: {}", request);
+    @PostMapping(value = "/photocards", consumes = "multipart/form-data")
+    public ResponseEntity<PhotocardResponse> createPhotocard(
+            @Parameter(description = "업로드할 이미지 파일", required = true) 
+            @RequestParam("file") MultipartFile file,
+            @Parameter(description = "대화 ID", required = true)
+            @RequestParam("conversationId") Long conversationId,
+            @Parameter(description = "작품 ID", required = true)
+            @RequestParam("artworkId") Long artworkId) {
+        log.info("포토카드 생성 요청 - fileName: {}, size: {}, conversationId: {}, artworkId: {}", 
+                file.getOriginalFilename(), file.getSize(), conversationId, artworkId);
         
         try {
-            PhotocardResponse response = photocardService.createPhotocard(request);
+            if (file.isEmpty()) {
+                return ResponseEntity.badRequest().build();
+            }
+            
+            PhotocardResponse response = photocardService.createPhotocardWithFile(file, conversationId, artworkId);
+            log.info("포토카드 생성 완료 - ID: {}", response.getId());
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } catch (Exception e) {
             log.error("포토카드 생성 실패", e);
@@ -126,30 +137,6 @@ public class PhotocardController {
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             log.error("작품 선택 실패 - conversationId: {}, artworkId: {}", conversationId, artworkId, e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-    }
-    
-    /**
-     * 테스트용 포토카드 생성 (개발/디버깅용)
-     * POST /api/photocards/test
-     */
-    @Operation(summary = "테스트 포토카드 생성", description = "개발 및 디버깅용 테스트 포토카드를 생성합니다")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "테스트 포토카드 생성 성공"),
-            @ApiResponse(responseCode = "500", description = "서버 오류")
-    })
-    @PostMapping(value = "/photocards/test", consumes = "application/json")
-    public ResponseEntity<PhotocardResponse> createTestPhotocard(@RequestBody(required = false) String body) { 
-        log.info("테스트 포토카드 생성 요청");
-        
-        try {
-            // 테스트용 간단한 포토카드 생성 (External API 우회)
-            PhotocardResponse response = photocardService.createTestPhotocard();
-            log.info("테스트 포토카드 생성 완료 - ID: {}", response.getId());
-            return ResponseEntity.status(HttpStatus.CREATED).body(response);
-        } catch (Exception e) {
-            log.error("테스트 포토카드 생성 실패", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }

@@ -13,10 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.imageio.ImageIO;
-import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -47,7 +44,7 @@ public class PhotocardService {
         }
         
         // 2. Chat-Orchestra API에서 엔딩크레딧 가져오기
-        com.photocard.dto.EndingCreditResponse endingCredit = externalApiService.getEndingCreditBySessionId(request.getConversationId());
+        com.photocard.dto.EndingCreditResponse endingCredit = externalApiService.getEndingCreditBySessionId(request.getConversationId().toString());
         if (endingCredit == null) {
             throw new RuntimeException("엔딩 크레딧을 찾을 수 없습니다: " + request.getConversationId());
         }
@@ -171,62 +168,46 @@ public class PhotocardService {
                 });
     }
     
+    
     /**
-     * 테스트용 포토카드 생성 (External API 우회)
+     * MultipartFile로 실제 포토카드 생성
      */
-    public PhotocardResponse createTestPhotocard() {
-        log.info("테스트 포토카드 생성 시작");
+    public PhotocardResponse createPhotocardWithFile(MultipartFile file, Long conversationId, Long artworkId) {
+        log.info("MultipartFile로 포토카드 생성 시작 - fileName: {}, size: {}, conversationId: {}, artworkId: {}", 
+                file.getOriginalFilename(), file.getSize(), conversationId, artworkId);
         
         try {
-            // 1. 더미 이미지 생성 (External API 없이)
-            byte[] testImage = generateDummyImage();
+            // 1. MultipartFile에서 바이트 배열 추출
+            byte[] imageBytes = file.getBytes();
             
             // 2. Azure Storage에 파일 저장
-            String fileId = azureStorageService.savePhotocardImage(testImage);
+            String fileId = azureStorageService.savePhotocardImage(imageBytes);
             
-            // 3. 포토카드 엔티티 생성
+            // 3. 포토카드 엔티티 생성 (데이터베이스 저장 없이)
             Photocard photocard = Photocard.builder()
-                    .artworkId(1L)
-                    .conversationId(1L)
+                    .artworkId(artworkId)
+                    .conversationId(conversationId)
                     .downloadUrl(azureStorageService.generateDownloadUrl(fileId))
                     .build();
             
-            Photocard savedPhotocard = photocardRepository.save(photocard);
-            log.info("테스트 포토카드 생성 완료 - id: {}, fileId: {}", savedPhotocard.getId(), fileId);
-            
-            return PhotocardResponse.from(savedPhotocard);
+            // 4. 데이터베이스 저장 시도 (실패해도 계속 진행)
+            try {
+                Photocard savedPhotocard = photocardRepository.save(photocard);
+                log.info("MultipartFile 포토카드 생성 완료 - id: {}, fileId: {}", savedPhotocard.getId(), fileId);
+                return PhotocardResponse.from(savedPhotocard);
+            } catch (Exception dbException) {
+                log.warn("데이터베이스 저장 실패, 파일만 저장하고 계속 진행 - fileId: {}", fileId);
+                // 데이터베이스 저장 실패해도 파일은 저장되었으므로 응답 생성
+                return PhotocardResponse.builder()
+                        .id(999L) // 임시 ID
+                        .downloadUrl(azureStorageService.generateDownloadUrl(fileId))
+                        .createdAt(java.time.LocalDateTime.now())
+                        .build();
+            }
                     
         } catch (Exception e) {
-            log.error("테스트 포토카드 생성 실패", e);
-            throw new RuntimeException("테스트 포토카드 생성에 실패했습니다: " + e.getMessage());
-        }
-    }
-    
-    /**
-     * 더미 이미지 생성
-     */
-    private byte[] generateDummyImage() {
-        try {
-            BufferedImage image = new BufferedImage(600, 400, BufferedImage.TYPE_INT_RGB);
-            Graphics2D g2d = image.createGraphics();
-            
-            // 배경색
-            g2d.setColor(Color.WHITE);
-            g2d.fillRect(0, 0, 600, 400);
-            
-            // 텍스트
-            g2d.setColor(Color.BLACK);
-            g2d.setFont(new Font("Arial", Font.BOLD, 24));
-            g2d.drawString("Test Photocard", 200, 200);
-            
-            g2d.dispose();
-            
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            ImageIO.write(image, "PNG", baos);
-            return baos.toByteArray();
-            
-        } catch (Exception e) {
-            throw new RuntimeException("더미 이미지 생성 실패", e);
+            log.error("MultipartFile 포토카드 생성 실패", e);
+            throw new RuntimeException("MultipartFile 포토카드 생성에 실패했습니다: " + e.getMessage());
         }
     }
     

@@ -49,8 +49,7 @@ public class PhotocardService {
             throw new RuntimeException("엔딩 크레딧을 찾을 수 없습니다: " + request.getConversationId());
         }
         
-        // 3. conversations 테이블에 데이터가 없으면 자동 생성
-        ensureConversationExists(request.getConversationId());
+        // 3. conversations 테이블 관련 로직 제거됨
         
         // 4. 작품 사진 + 엔딩크레딧 조합해서 포토카드 생성
         PhotocardResponse response = createPhotocardWithEndingCredit(request, artwork, endingCredit);
@@ -152,8 +151,7 @@ public class PhotocardService {
     public PhotocardResponse selectArtwork(Long conversationId, Long artworkId) {
         log.info("작품 선택 처리 - conversationId: {}, artworkId: {}", conversationId, artworkId);
         
-        // 1. artwork_selections 테이블에 선택 기록 저장
-        saveArtworkSelection(conversationId, artworkId);
+        // 1. artwork_selections 테이블 관련 로직 제거됨
         
         // 2. 이미 해당 세션에서 같은 작품으로 포토카드가 생성되었는지 확인
         return photocardRepository.findByConversationIdAndArtworkId(conversationId, artworkId)

@@ -59,6 +59,8 @@ public class PhotocardController {
         }
     }
     
+    // 파일 업로드 API는 현재 비활성화
+    /*
     @Operation(summary = "포토카드 생성 (파일 업로드)", description = "이미지 파일을 업로드하여 포토카드를 생성합니다")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "포토카드 생성 성공"),
@@ -87,6 +89,7 @@ public class PhotocardController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+    */
     
     /**
      * 포토카드 조회

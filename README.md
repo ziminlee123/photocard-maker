@@ -71,7 +71,7 @@ CREATE TABLE artwork_selections (
 - **Container**: Docker
 ---
 ### 담당자
-**김지민** - 포토카드 생성 로직, 이미지 처리, Azure Storage 연동
+**이지민** - 포토카드 생성 로직, 이미지 처리, Azure Storage 연동
 - 주요 기능: 작품 기반 포토카드 자동 생성, 이미지 리사이징 및 텍스트 오버레이
 - 기술 담당: Spring Boot, Azure Services, Image Processing
 ---

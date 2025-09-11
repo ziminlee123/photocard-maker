@@ -61,21 +61,3 @@ azure:
     connection-string: ${AZURE_STORAGE_CONNECTION_STRING}
     container-name: ${AZURE_STORAGE_CONTAINER_NAME:photocards}
     base-url: ${AZURE_STORAGE_BASE_URL}
-
-# 기존 내용...
-
-# Chat Database Configuration
-chat:
-  datasource:
-    url: ${CHAT_DATASOURCE_URL}
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    username: ${CHAT_DATASOURCE_USERNAME}
-    password: ${CHAT_DATASOURCE_PASSWORD}
-    hikari:
-      maximum-pool-size: 5
-      minimum-idle: 2
-      connection-timeout: 20000
-      idle-timeout: 300000
-      max-lifetime: 1200000
-
-# 기존 내용...

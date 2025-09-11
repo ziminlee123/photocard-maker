@@ -5,18 +5,13 @@ import com.photocard.dto.PhotocardCreateRequest;
 import com.photocard.dto.PhotocardResponse;
 import com.photocard.entity.ArtworkSelection;
 import com.photocard.entity.Photocard;
-import com.photocard.entity.chat.Conversation;
 import com.photocard.repository.ArtworkSelectionRepository;
 import com.photocard.repository.PhotocardRepository;
-import com.photocard.repository.chat.ConversationRepository;
 import com.photocard.service.MetadataCombinationService.PhotocardMetadata;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.PlatformTransactionManager;
 
 import org.springframework.web.multipart.MultipartFile;
 
@@ -35,13 +30,6 @@ public class PhotocardService {
     private final MetadataCombinationService metadataCombinationService;
     private final AzureStorageService azureStorageService;
     private final ImageProcessingService imageProcessingService;
-    
-    @Autowired
-    @Qualifier("chatTransactionManager")
-    private PlatformTransactionManager chatTransactionManager;
-    
-    @Autowired
-    private ConversationRepository conversationRepository;
     
     /**
      * 포토카드 생성
@@ -227,17 +215,9 @@ public class PhotocardService {
      * conversations 테이블에 데이터가 없으면 자동 생성
      */
     private void ensureConversationExists(Long conversationId) {
-        try {
-            if (!conversationRepository.existsById(conversationId)) {
-                Conversation conversation = Conversation.builder()
-                        .id(conversationId)
-                        .build();
-                conversationRepository.save(conversation);
-                log.info("Conversation 생성 완료 - ID: {}", conversationId);
-            }
-        } catch (Exception e) {
-            log.warn("Conversation 생성 실패 - ID: {}, 오류: {}", conversationId, e.getMessage());
-        }
+        // TODO: conversations 테이블에 해당 ID가 있는지 확인하고 없으면 생성
+        // 현재는 외래키 제약조건 오류를 방지하기 위한 임시 처리
+        log.info("conversationId {} 확인 - conversations 테이블에 데이터가 있는지 확인 필요", conversationId);
     }
     
     /**

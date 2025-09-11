@@ -195,7 +195,7 @@ public class ImageProcessingService {
         drawDescription(g2d, artwork, width);
         
         // 엔딩크레딧 그리기
-        drawEndingCredit(g2d, endingCredit, width, height);
+        // drawEndingCredit(g2d, endingCredit, width, height);
     }
     
     /**
@@ -236,6 +236,11 @@ public class ImageProcessingService {
      * 엔딩크레딧 그리기
      */
     private void drawEndingCredit(Graphics2D g2d, EndingCreditResponse endingCredit, int width, int height) {
+        // endingCredit이 null이면 그리지 않음
+        if (endingCredit == null) {
+            return;
+        }
+        
         g2d.setFont(new Font("Arial", Font.ITALIC, 14));
         g2d.setColor(new Color(153, 153, 153));
         

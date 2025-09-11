@@ -1,14 +1,13 @@
 package com.photocard.service;
 
 import com.photocard.config.ExternalApiConfig;
-import com.photocard.dto.EndingCreditResponse;
+//import com.photocard.dto.EndingCreditResponse;
 import com.photocard.dto.ExternalArtworkResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -45,45 +44,6 @@ public class ExternalApiService {
         }
     }
     
-    /**
-     * Chat-Orchestra 서비스에서 엔딩크레딧 조회 (ID로)
-     */
-    public EndingCreditResponse getEndingCreditById(Long endingCreditId) {
-        try {
-            String url = apiConfig.getChatOrchestraBaseUrl() + "/api/ending-credits/" + endingCreditId;
-            log.info("Chat-Orchestra 서비스에서 엔딩크레딧 조회: {}", url);
-            
-            return restTemplate.getForObject(url, EndingCreditResponse.class);
-        } catch (Exception e) {
-            log.error("엔딩크레딧 조회 실패 - endingCreditId: {}", endingCreditId, e);
-            throw new RuntimeException("엔딩크레딧을 가져올 수 없습니다: " + e.getMessage());
-        }
-    }
-    
-    /**
-     * Chat-Orchestra 서비스에서 엔딩크레딧 조회 (세션 ID로)
-     */
-    public EndingCreditResponse getEndingCreditBySessionId(String sessionId) {
-        try {
-            String url = apiConfig.getChatOrchestraBaseUrl() + "/api/ending-credits/session/" + sessionId;
-            log.info("Chat-Orchestra 서비스에서 엔딩크레딧 조회 (세션): {}", url);
-            
-            return restTemplate.getForObject(url, EndingCreditResponse.class);
-        } catch (Exception e) {
-            log.error("엔딩크레딧 조회 실패 - sessionId: {}, Mock 데이터 사용", sessionId, e);
-            
-            // 테스트용 Mock 데이터 반환
-            return EndingCreditResponse.builder()
-                    .id(1L)
-                    .sessionId(sessionId)
-                    .conversationSummary("테스트 대화 요약입니다")
-                    .participants("사용자, AI 어시스턴트")
-                    .duration("5분 30초")
-                    .createdAt(LocalDateTime.now())
-                    .metadata("{\"conversation_type\": \"artwork_discussion\", \"topics\": [\"art\", \"history\"]}")
-                    .build();
-        }
-    }
     
     /**
      * 이미지 라이선스 확인 (외부 API 호출)

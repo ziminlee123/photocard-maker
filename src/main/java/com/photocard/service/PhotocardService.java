@@ -35,26 +35,58 @@ public class PhotocardService {
      * 포토카드 생성
      */
     public PhotocardResponse createPhotocard(PhotocardCreateRequest request) {
-        log.info("포토카드 생성 시작 - artworkId: {}, conversationId: {}", request.getArtworkId(), request.getConversationId());
+        log.info("포토카드 생성 시작 - artworkId: {}", request.getArtworkId());
         
-        // 1. Exhibition API에서 artwork 정보 가져오기 (image_url 포함)
-        ExternalArtworkResponse artwork = externalApiService.getArtworkById(request.getArtworkId());
-        if (artwork == null) {
-            throw new RuntimeException("작품을 찾을 수 없습니다: " + request.getArtworkId());
+        try {
+            // 1. Exhibition API에서 artwork 정보 가져오기 (image_url 포함)
+            ExternalArtworkResponse artwork = externalApiService.getArtworkById(request.getArtworkId());
+            if (artwork == null) {
+                throw new RuntimeException("작품을 찾을 수 없습니다: " + request.getArtworkId());
+            }
+            
+            log.info("작품 정보 조회 성공 - artworkId: {}, title: {}", artwork.getId(), artwork.getTitle());
+            
+            // 2. 작품 사진으로 포토카드 생성
+            PhotocardResponse response = createPhotocardWithArtwork(request, artwork);
+            
+            return response;
+        } catch (Exception e) {
+            log.error("포토카드 생성 중 오류 발생 - artworkId: {}", request.getArtworkId(), e);
+            throw new RuntimeException("포토카드 생성에 실패했습니다: " + e.getMessage());
         }
-        
-        // 2. Chat-Orchestra API에서 엔딩크레딧 가져오기
-        com.photocard.dto.EndingCreditResponse endingCredit = externalApiService.getEndingCreditBySessionId(request.getConversationId().toString());
-        if (endingCredit == null) {
-            throw new RuntimeException("엔딩 크레딧을 찾을 수 없습니다: " + request.getConversationId());
+    }
+    
+    /**
+     * 작품 사진으로 포토카드 생성
+     */
+    private PhotocardResponse createPhotocardWithArtwork(PhotocardCreateRequest request, 
+                                                         ExternalArtworkResponse artwork) {
+        try {
+            log.info("작품 사진으로 포토카드 생성 시작 - artworkId: {}", request.getArtworkId());
+            
+            // 1. 작품 사진으로 포토카드 이미지 생성
+            byte[] photocardImage = imageProcessingService.generatePhotocardImage(artwork, null);
+            
+            // 2. Azure Storage에 파일 저장
+            String fileId = azureStorageService.savePhotocardImage(photocardImage);
+            
+            // 3. 포토카드 엔티티 생성
+            Photocard photocard = Photocard.builder()
+                    .artworkId(request.getArtworkId())
+                    .downloadUrl(azureStorageService.generateDownloadUrl(fileId))
+                    .build();
+            
+            // 4. 데이터베이스 저장
+            Photocard savedPhotocard = photocardRepository.save(photocard);
+            
+            log.info("포토카드 생성 완료 - id: {}, fileId: {}", savedPhotocard.getId(), fileId);
+            
+            return PhotocardResponse.from(savedPhotocard);
+            
+        } catch (Exception e) {
+            log.error("포토카드 생성 실패", e);
+            throw new RuntimeException("포토카드 생성에 실패했습니다: " + e.getMessage());
         }
-        
-        // 3. conversations 테이블 관련 로직 제거됨
-        
-        // 4. 작품 사진 + 엔딩크레딧 조합해서 포토카드 생성
-        PhotocardResponse response = createPhotocardWithEndingCredit(request, artwork, endingCredit);
-        
-        return response;
     }
     
     /**
@@ -75,7 +107,6 @@ public class PhotocardService {
             // 3. 포토카드 엔티티 생성
             Photocard photocard = Photocard.builder()
                     .artworkId(request.getArtworkId())
-                    .conversationId(request.getConversationId())
                     .downloadUrl(azureStorageService.generateDownloadUrl(fileId))
                     .build();
             
@@ -107,7 +138,6 @@ public class PhotocardService {
             // 3. 포토카드 엔티티 생성
             Photocard photocard = Photocard.builder()
                     .artworkId(request.getArtworkId())
-                    .conversationId(request.getConversationId())
                     .downloadUrl(azureStorageService.generateDownloadUrl(fileId))
                     .build();
             
@@ -138,8 +168,8 @@ public class PhotocardService {
      * 세션별 포토카드 목록 조회
      */
     @Transactional(readOnly = true)
-    public List<PhotocardResponse> getPhotocardsBySessionId(Long conversationId) {
-        List<Photocard> photocards = photocardRepository.findByConversationId(conversationId);
+    public List<PhotocardResponse> getPhotocardsByArtworkId(Long artworkId) {
+        List<Photocard> photocards = photocardRepository.findByArtworkId(artworkId);
         return photocards.stream()
                 .map(PhotocardResponse::from)
                 .collect(Collectors.toList());
@@ -148,19 +178,18 @@ public class PhotocardService {
     /**
      * 작품 선택 처리 (Chat-Orchestra에서 호출)
      */
-    public PhotocardResponse selectArtwork(Long conversationId, Long artworkId) {
-        log.info("작품 선택 처리 - conversationId: {}, artworkId: {}", conversationId, artworkId);
+    public PhotocardResponse selectArtwork(Long artworkId) {
+        log.info("작품 선택 처리 - artworkId: {}", artworkId);
         
-        // 1. artwork_selections 테이블 관련 로직 제거됨
-        
-        // 2. 이미 해당 세션에서 같은 작품으로 포토카드가 생성되었는지 확인
-        return photocardRepository.findByConversationIdAndArtworkId(conversationId, artworkId)
+        // 1. 이미 해당 작품으로 포토카드가 생성되었는지 확인
+        return photocardRepository.findByArtworkId(artworkId)
+                .stream()
+                .findFirst()
                 .map(PhotocardResponse::from)
                 .orElseGet(() -> {
-                    // 3. 새로운 포토카드 생성
+                    // 2. 새로운 포토카드 생성
                     PhotocardCreateRequest request = PhotocardCreateRequest.builder()
                             .artworkId(artworkId)
-                            .conversationId(conversationId)
                             .build();
                     return createPhotocard(request);
                 });
@@ -170,9 +199,9 @@ public class PhotocardService {
     /**
      * MultipartFile로 실제 포토카드 생성
      */
-    public PhotocardResponse createPhotocardWithFile(MultipartFile file, Long conversationId, Long artworkId) {
-        log.info("MultipartFile로 포토카드 생성 시작 - fileName: {}, size: {}, conversationId: {}, artworkId: {}", 
-                file.getOriginalFilename(), file.getSize(), conversationId, artworkId);
+    public PhotocardResponse createPhotocardWithFile(MultipartFile file, Long artworkId) {
+        log.info("MultipartFile로 포토카드 생성 시작 - fileName: {}, size: {}, artworkId: {}", 
+                file.getOriginalFilename(), file.getSize(), artworkId);
         
         try {
             // 1. MultipartFile에서 바이트 배열 추출
@@ -184,7 +213,6 @@ public class PhotocardService {
             // 3. 포토카드 엔티티 생성 (데이터베이스 저장 없이)
             Photocard photocard = Photocard.builder()
                     .artworkId(artworkId)
-                    .conversationId(conversationId)
                     .downloadUrl(azureStorageService.generateDownloadUrl(fileId))
                     .build();
             
@@ -209,31 +237,6 @@ public class PhotocardService {
         }
     }
     
-    /**
-     * conversations 테이블에 데이터가 없으면 자동 생성
-     */
-    private void ensureConversationExists(Long conversationId) {
-        // TODO: conversations 테이블에 해당 ID가 있는지 확인하고 없으면 생성
-        // 현재는 외래키 제약조건 오류를 방지하기 위한 임시 처리
-        log.info("conversationId {} 확인 - conversations 테이블에 데이터가 있는지 확인 필요", conversationId);
-    }
-    
-    /**
-     * 작품 선택 기록 저장
-     */
-    private void saveArtworkSelection(Long conversationId, Long artworkId) {
-        // 중복 선택 방지
-        if (!artworkSelectionRepository.existsByConversationIdAndArtworkId(conversationId, artworkId)) {
-            ArtworkSelection selection = ArtworkSelection.builder()
-                    .conversationId(conversationId)
-                    .artworkId(artworkId)
-                    .build();
-            artworkSelectionRepository.save(selection);
-            log.info("작품 선택 기록 저장 완료 - conversationId: {}, artworkId: {}", conversationId, artworkId);
-        } else {
-            log.info("이미 선택된 작품 - conversationId: {}, artworkId: {}", conversationId, artworkId);
-        }
-    }
     
     /**
      * 포토카드 생성 내부 로직 (통합된 렌더링)
@@ -254,7 +257,6 @@ public class PhotocardService {
             // 3. 포토카드 엔티티 생성
             Photocard photocard = Photocard.builder()
                     .artworkId(request.getArtworkId())
-                    .conversationId(request.getConversationId())
                     .downloadUrl(azureStorageService.generateDownloadUrl(fileId))
                     .build();
             

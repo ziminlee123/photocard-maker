@@ -15,7 +15,7 @@ import java.util.List;
 public class EndingCreditResponse {
     
     private Long id;
-    private String sessionId;
+    private Long sessionId;
     private List<Long> artworkIds;
     private String conversationSummary;
     private String participants;

@@ -9,7 +9,7 @@ import java.util.List;
 @Repository
 public interface ArtworkSelectionRepository extends JpaRepository<ArtworkSelection, Long> {
     
-    List<ArtworkSelection> findByConversationId(Long conversationId);
+    List<ArtworkSelection> findByArtworkId(Long artworkId);
     
-    boolean existsByConversationIdAndArtworkId(Long conversationId, Long artworkId);
+    boolean existsByArtworkId(Long artworkId);
 }

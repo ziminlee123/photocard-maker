@@ -16,7 +16,7 @@ public class ExternalApiService {
     
     private final RestTemplate restTemplate;
     private final ExternalApiConfig apiConfig;
-    햣햣
+    
     /**
      * Exhibition 서비스에서 작품 정보 조회
      */

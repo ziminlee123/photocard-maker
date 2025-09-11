@@ -20,9 +20,6 @@ public class Photocard {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
-    @Column(name = "conversation_id", nullable = false)
-    private Long conversationId;
 
     @Column(name = "artwork_id", nullable = false)
     private Long artworkId;

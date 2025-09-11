@@ -1,5 +1,6 @@
 package com.photocard.controller;
 
+import com.photocard.dto.PhotocardCreateRequest;
 import com.photocard.dto.PhotocardResponse;
 import com.photocard.service.PhotocardService;
 import com.photocard.service.AzureStorageService;
@@ -41,28 +42,44 @@ public class PhotocardController {
             @ApiResponse(responseCode = "500", description = "서버 오류")
     })
     // @PostMapping(value = "/photocards", consumes = "multipart/form-data")
-    @PostMapping(value = "/test")
-    public ResponseEntity<String> testEndpoint() {
-        return ResponseEntity.ok("Test endpoint working!");
-    }
 
-    @PostMapping(value = "/photocards")
+    @PostMapping(value = "/photocards", consumes = "application/json")
     public ResponseEntity<PhotocardResponse> createPhotocard(
+            @Parameter(description = "포토카드 생성 요청", required = true)
+            @RequestBody PhotocardCreateRequest request) {
+        log.info("포토카드 생성 요청 - artworkId: {}", request.getArtworkId());
+        
+        try {
+            PhotocardResponse response = photocardService.createPhotocard(request);
+            log.info("포토카드 생성 완료 - ID: {}", response.getId());
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        } catch (Exception e) {
+            log.error("포토카드 생성 실패", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+    
+    @Operation(summary = "포토카드 생성 (파일 업로드)", description = "이미지 파일을 업로드하여 포토카드를 생성합니다")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "포토카드 생성 성공"),
+            @ApiResponse(responseCode = "400", description = "잘못된 요청"),
+            @ApiResponse(responseCode = "500", description = "서버 오류")
+    })
+    @PostMapping(value = "/photocards/upload", consumes = "multipart/form-data")
+    public ResponseEntity<PhotocardResponse> createPhotocardWithFile(
             @Parameter(description = "업로드할 이미지 파일", required = true) 
             @RequestParam("file") MultipartFile file,
-            @Parameter(description = "대화 ID", required = true)
-            @RequestParam("conversationId") Long conversationId,
             @Parameter(description = "작품 ID", required = true)
             @RequestParam("artworkId") Long artworkId) {
-        log.info("포토카드 생성 요청 - fileName: {}, size: {}, conversationId: {}, artworkId: {}", 
-                file.getOriginalFilename(), file.getSize(), conversationId, artworkId);
+        log.info("포토카드 생성 요청 (파일) - fileName: {}, size: {}, artworkId: {}", 
+                file.getOriginalFilename(), file.getSize(), artworkId);
         
         try {
             if (file.isEmpty()) {
                 return ResponseEntity.badRequest().build();
             }
             
-            PhotocardResponse response = photocardService.createPhotocardWithFile(file, conversationId, artworkId);
+            PhotocardResponse response = photocardService.createPhotocardWithFile(file, artworkId);
             log.info("포토카드 생성 완료 - ID: {}", response.getId());
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } catch (Exception e) {
@@ -100,49 +117,48 @@ public class PhotocardController {
     }
     
     /**
-     * 세션별 포토카드 목록 조회
-     * GET /api/photocards?sessionId={sessionId}
+     * 작품별 포토카드 목록 조회
+     * GET /api/photocards?artworkId={artworkId}
      */
-    @Operation(summary = "세션별 포토카드 목록 조회", description = "세션 ID로 포토카드 목록을 조회합니다")
+    @Operation(summary = "작품별 포토카드 목록 조회", description = "작품 ID로 포토카드 목록을 조회합니다")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "조회 성공"),
             @ApiResponse(responseCode = "500", description = "서버 오류")
     })
     @GetMapping("/photocards")
-    public ResponseEntity<List<PhotocardResponse>> getPhotocardsBySession(
-            @Parameter(description = "대화 ID", required = true) @RequestParam(name = "conversationId") Long conversationId) {
-        log.info("대화별 포토카드 조회 요청: {}", conversationId);
+    public ResponseEntity<List<PhotocardResponse>> getPhotocardsByArtwork(
+            @Parameter(description = "작품 ID", required = true) @RequestParam(name = "artworkId") Long artworkId) {
+        log.info("작품별 포토카드 조회 요청: {}", artworkId);
         
         try {
-            List<PhotocardResponse> responses = photocardService.getPhotocardsBySessionId(conversationId);
+            List<PhotocardResponse> responses = photocardService.getPhotocardsByArtworkId(artworkId);
             return ResponseEntity.ok(responses);
         } catch (Exception e) {
-            log.error("대화별 포토카드 조회 실패: {}", conversationId, e);
+            log.error("작품별 포토카드 조회 실패: {}", artworkId, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
     
     /**
      * 작품 선택 (Chat-Orchestra에서 호출)
-     * POST /api/conversation/{sessionId}/artworks/{artworkId}/select
+     * POST /api/artworks/{artworkId}/select
      */
     @Operation(summary = "작품 선택", description = "사용자가 선택한 작품으로 포토카드를 생성합니다")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "작품 선택 성공"),
             @ApiResponse(responseCode = "500", description = "서버 오류")
     })
-    @PostMapping(value = "/conversation/{sessionId}/artworks/{artworkId}/select", consumes = "application/json")
+    @PostMapping(value = "/artworks/{artworkId}/select", consumes = "application/json")
     public ResponseEntity<PhotocardResponse> selectArtwork(
-            @Parameter(description = "대화 ID", required = true) @PathVariable("sessionId") Long conversationId,
             @Parameter(description = "작품 ID", required = true) @PathVariable Long artworkId,
             @RequestBody(required = false) String body) {
-        log.info("작품 선택 요청 - conversationId: {}, artworkId: {}", conversationId, artworkId);
+        log.info("작품 선택 요청 - artworkId: {}", artworkId);
         
         try {
-            PhotocardResponse response = photocardService.selectArtwork(conversationId, artworkId);
+            PhotocardResponse response = photocardService.selectArtwork(artworkId);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            log.error("작품 선택 실패 - conversationId: {}, artworkId: {}", conversationId, artworkId, e);
+            log.error("작품 선택 실패 - artworkId: {}", artworkId, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
@@ -163,18 +179,47 @@ public class PhotocardController {
         log.info("포토카드 다운로드 요청: {}", fileId);
         
         try {
-            Resource resource = azureStorageService.loadPhotocardImage(fileId);
-            
-            return ResponseEntity.ok()
-                    .contentType(MediaType.IMAGE_JPEG)
-                    .header(HttpHeaders.CONTENT_DISPOSITION, 
-                            "inline; filename=\"photocard_" + fileId + ".jpg\"")
-                    .body(resource);
-        } catch (RuntimeException e) {
-            log.error("포토카드 다운로드 실패 - fileId: {}, 오류: {}", fileId, e.getMessage());
-            return ResponseEntity.notFound().build();
+            // Azure Storage에서 먼저 시도
+            try {
+                Resource resource = azureStorageService.loadPhotocardImage(fileId);
+                return ResponseEntity.ok()
+                        .contentType(MediaType.IMAGE_JPEG)
+                        .header(HttpHeaders.CONTENT_DISPOSITION, 
+                                "inline; filename=\"photocard_" + fileId + ".jpg\"")
+                        .body(resource);
+            } catch (Exception azureException) {
+                log.warn("Azure Storage에서 파일을 찾을 수 없음, 로컬 파일 확인: {}", azureException.getMessage());
+                
+                // 로컬 파일에서 시도
+                return loadLocalPhotocardImage(fileId);
+            }
         } catch (Exception e) {
             log.error("포토카드 다운로드 중 오류 발생 - fileId: {}", fileId, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+    
+    /**
+     * 로컬 파일에서 포토카드 이미지 로드
+     */
+    private ResponseEntity<Resource> loadLocalPhotocardImage(String fileId) {
+        try {
+            String fileName = "photocard_" + fileId + ".jpg";
+            java.nio.file.Path filePath = java.nio.file.Paths.get("./uploads", fileName);
+            
+            if (java.nio.file.Files.exists(filePath)) {
+                Resource resource = new org.springframework.core.io.FileSystemResource(filePath);
+                return ResponseEntity.ok()
+                        .contentType(MediaType.IMAGE_JPEG)
+                        .header(HttpHeaders.CONTENT_DISPOSITION, 
+                                "inline; filename=\"" + fileName + "\"")
+                        .body(resource);
+            } else {
+                log.error("로컬 파일을 찾을 수 없음 - fileId: {}, path: {}", fileId, filePath);
+                return ResponseEntity.notFound().build();
+            }
+        } catch (Exception e) {
+            log.error("로컬 파일 로드 실패 - fileId: {}", fileId, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
@@ -195,14 +240,18 @@ public class PhotocardController {
         log.info("포토카드 미리보기 요청: {}", fileId);
         
         try {
-            Resource resource = azureStorageService.loadPhotocardImage(fileId);
-            
-            return ResponseEntity.ok()
-                    .contentType(MediaType.IMAGE_JPEG)
-                    .body(resource);
-        } catch (RuntimeException e) {
-            log.error("포토카드 미리보기 실패 - fileId: {}, 오류: {}", fileId, e.getMessage());
-            return ResponseEntity.notFound().build();
+            // Azure Storage에서 먼저 시도
+            try {
+                Resource resource = azureStorageService.loadPhotocardImage(fileId);
+                return ResponseEntity.ok()
+                        .contentType(MediaType.IMAGE_JPEG)
+                        .body(resource);
+            } catch (Exception azureException) {
+                log.warn("Azure Storage에서 파일을 찾을 수 없음, 로컬 파일 확인: {}", azureException.getMessage());
+                
+                // 로컬 파일에서 시도
+                return loadLocalPhotocardImage(fileId);
+            }
         } catch (Exception e) {
             log.error("포토카드 미리보기 중 오류 발생 - fileId: {}", fileId, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();

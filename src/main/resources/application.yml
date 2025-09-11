@@ -17,7 +17,7 @@ spring:
       max-request-size: 10MB
       file-size-threshold: 2KB
   
-  datasource:
+  datasource:ㅎ..
     url: ${SPRING_DATASOURCE_URL}
     driver-class-name: com.mysql.cj.jdbc.Driver
     username: ${SPRING_DATASOURCE_USERNAME}

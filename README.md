@@ -167,16 +167,6 @@ dependencies {
 ---
 
 ## 담당자
-
-### 개발자: 이지민
-**담당 기능**:
-- 포토카드 생성 및 관리 API
-- Azure Storage 연동
-- 이미지 처리 서비스
-- Docker 컨테이너화 및 배포
-
-=======
-### 담당자
 **이지민** - 포토카드 생성 로직, 이미지 처리, Azure Storage 연동
 - 주요 기능: 작품 기반 포토카드 자동 생성, 이미지 리사이징 및 텍스트 오버레이
 - 기술 담당: Spring Boot, Azure Services, Image Processing

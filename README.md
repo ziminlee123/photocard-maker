@@ -115,10 +115,13 @@ CHAT_ORCHESTRA_API_URL=http://localhost:8080
 
 ## 아키텍처
 
-### MSA 구조
-- **Chat-Orchestra Service** (포트: 8080) - 대화 관리
-- **Exhibition Service** (포트: 8082) - 전시회 및 작품 관리
-- **Photocard-Maker Service** (포트: 8081) - 포토카드 생성 및 관리
+## MSA 구조
+- **Exhibition Service** - 전시회 및 작품 관리  
+  - 로컬: http://localhost:8082
+  - Azure: https://guidely-exhibition-artwork-services-dmeagqebfud4e7hh.koreacentral-01.azurewebsites.net
+- **Photocard-Maker Service** (현재 서비스) - 포토카드 생성 및 관리
+  - 로컬: http://localhost:8081
+  - Azure: https://guidely-phtotcardmaker-g9hqaacaadcwdhfn.koreacentral-01.azurewebsites.net
 
 ### 주요 컴포넌트
 - **PhotocardController**: REST API 엔드포인트

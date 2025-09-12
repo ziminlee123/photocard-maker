@@ -129,27 +129,6 @@ CHAT_ORCHESTRA_API_URL=http://localhost:8080
 
 ---
 
-## CORS 설정
-
-프론트엔드에서의 CORS 오류를 방지하기 위해 다음과 같이 설정되어 있습니다:
-
-```java
-@Configuration
-public class OpenApiConfig implements WebMvcConfigurer {
-    @Override
-    public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/api/**")
-                .allowedOriginPatterns("*")
-                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
-                .allowedHeaders("*")
-                .allowCredentials(false)
-                .maxAge(3600);
-    }
-}
-```
-
----
-
 ## 배포 정보
 
 ### Azure 배포
